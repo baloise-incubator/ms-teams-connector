@@ -47,20 +47,13 @@
       "target": "https://docs.microsoft.com/outlook/actionable-messages"
     }]
   }, {
-    "@type": "OpenUri",
-    "name": "Learn More",
-    "targets": [{
-      "os": "default",
-      "uri": "https://docs.microsoft.com/outlook/actionable-messages"
-    }]
-  }, {
     "@type": "ActionCard",
     "name": "Change status",
     "inputs": [{
       "@type": "MultichoiceInput",
       "id": "list",
       "title": "Select a status",
-      "isMultiSelect": "false",
+      "isMultiSelect": false,
       "choices": [{
         "display": "In Progress",
         "value": "1"

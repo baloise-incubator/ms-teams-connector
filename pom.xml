@@ -6,8 +6,8 @@
   <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>MS-TEAMS SDK to publish MessageCards to any Teams channel</name>
-  <description>Use this SDK to programmatically create a MessageCard and publish it to a Teams channel via webhook.</description>
+  <name>MS-TEAMS conenctor </name>
+  <description>Use this Connector to programmatically create a MessageCard and publish it to a Teams channel via webhook.</description>
 
   <developers>
     <developer>
