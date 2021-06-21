@@ -21,10 +21,10 @@ class MessageCardFactoryTest {
     final Section section = simpleMessageCard.getSections().get(0);
 
     assertAll(
-        () -> assertEquals(title, simpleMessageCard.getTitle()),
+        () -> assertNull(simpleMessageCard.getTitle()),
         () -> assertEquals(title, simpleMessageCard.getSummary()),
         () -> assertEquals(SCHEMA, simpleMessageCard.getContext()),
-        () -> assertEquals(COLOR, simpleMessageCard.getThemeColor()),
+        () -> assertNull(simpleMessageCard.getThemeColor()),
         () -> assertEquals(TYPE, simpleMessageCard.getType()),
         () -> assertNull(simpleMessageCard.getPotentialActions()),
         () -> assertEquals(1, simpleMessageCard.getSections().size()),

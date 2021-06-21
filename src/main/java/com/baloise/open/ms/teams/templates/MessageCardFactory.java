@@ -22,7 +22,7 @@ public final class MessageCardFactory {
   }
 
   public static MessageCard createSimpleMessageCard(final String title, final String message) {
-    final MessageCard messageCard = new MessageCard(title, title);
+    final MessageCard messageCard = new MessageCard(null, title);
     messageCard.addSection(Section.builder().activityTitle(title).activitySubtitle(message).build());
     return messageCard;
   }

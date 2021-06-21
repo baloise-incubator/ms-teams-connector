@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.Map;
 
 class MessagePublisherImpl implements MessagePublisher {
 
@@ -39,7 +39,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
   private final Config config;
 
-  MessagePublisherImpl(final HashMap<String, Object> properties) {
+  MessagePublisherImpl(final Map<String, Object> properties) {
     LOG.info(properties);
     config = new Config(properties);
   }

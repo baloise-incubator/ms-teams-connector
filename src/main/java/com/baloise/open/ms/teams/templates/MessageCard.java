@@ -32,7 +32,7 @@ public class MessageCard {
   @SerializedName(value = "@context")
   private final String context = "http://schema.org/extensions";
 
-  private String themeColor = "0076D7";
+  private String themeColor;
   private final String title;
   private final String summary;
 

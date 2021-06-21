@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public final class Config {
@@ -33,13 +33,13 @@ public final class Config {
   private final long pauseBetweenRetries;
   private final URI webhookURI;
 
-  public Config(final HashMap<String, Object> properties) {
+  public Config(final Map<String, Object> properties) {
     retries = setRetries(properties);
     pauseBetweenRetries = setPauseBetweenRetries(properties);
     webhookURI = setWebhookURI(properties);
   }
 
-  private URI setWebhookURI(HashMap<String, Object> properties) {
+  private URI setWebhookURI(Map<String, Object> properties) {
     if (properties == null || properties.get(MessagePublisher.PROPERTY_WEBHOOK_URI) == null) {
       throw new IllegalArgumentException(String.format("Parameter %s must not be null.", MessagePublisher.PROPERTY_WEBHOOK_URI));
     }
@@ -58,7 +58,7 @@ public final class Config {
     }
   }
 
-  private long setPauseBetweenRetries(HashMap<String, Object> properties) {
+  private long setPauseBetweenRetries(Map<String, Object> properties) {
     final long _default = 60000;
     if (properties == null) {
       return _default;
@@ -82,7 +82,7 @@ public final class Config {
     }
   }
 
-  private int setRetries(HashMap<String, Object> properties) {
+  private int setRetries(Map<String, Object> properties) {
     final int _default = 1;
     if (properties == null) {
       return _default;

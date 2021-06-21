@@ -18,6 +18,7 @@ package com.baloise.open.ms.teams.webhook;
 import com.baloise.open.ms.teams.templates.MessageCard;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public interface MessagePublisher {
 
@@ -36,8 +37,8 @@ public interface MessagePublisher {
    */
   String PROPERTY_WEBHOOK_URI = "com.baloise.open.ms.teams.webhook.uri";
 
-  static MessagePublisher getInstance(final HashMap<String, Object> properties) {
-    final HashMap<String, Object> defaultProperties = getDefaultProperties();
+  static MessagePublisher getInstance(final Map<String, Object> properties) {
+    final Map<String, Object> defaultProperties = getDefaultProperties();
     if(properties != null) {
       properties.forEach((key, value) -> defaultProperties.merge(key, value, (k1, v1) -> value));
     }
@@ -46,7 +47,7 @@ public interface MessagePublisher {
 
   void publish(MessageCard messageCard);
 
-  static HashMap<String, Object> getDefaultProperties() {
+  static Map<String, Object> getDefaultProperties() {
     final HashMap<String, Object> properties = new HashMap<>();
     properties.put(PROPERTY_RETRIES, 3);
     properties.put(PROPERTY_RETRY_PAUSE, 60);

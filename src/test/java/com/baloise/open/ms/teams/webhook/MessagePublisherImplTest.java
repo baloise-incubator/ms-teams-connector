@@ -8,13 +8,14 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessagePublisherImplTest {
 
-  private HashMap<String, Object> defaultProperties;
+  private Map<String, Object> defaultProperties;
 
   @BeforeEach
   void setUp() {
@@ -41,7 +42,7 @@ class MessagePublisherImplTest {
     @Test
     @DisplayName("Verfiy DefaultProperties overwritten by input")
     void testDefaultPropertiesOverwritten() {
-      final HashMap<String, Object> properties = new HashMap<>();
+      final Map<String, Object> properties = new HashMap<>();
       properties.put(MessagePublisher.PROPERTY_RETRIES, 5);
       properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 599);
       properties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://my.uri.com");
