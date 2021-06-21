@@ -44,7 +44,6 @@ class MessagePublisherImpl implements MessagePublisher {
     config = new Config(properties);
   }
 
-  // TODO: Create MessageCardFactory for simple values (e.g. Title/Text only)
   @Override
   public void publish(final MessageCard messageCard) {
     final HttpPost httpPost = new HttpPost(config.getWebhookURI());

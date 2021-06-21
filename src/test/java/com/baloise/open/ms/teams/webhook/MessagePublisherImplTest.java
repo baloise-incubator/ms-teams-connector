@@ -72,44 +72,75 @@ class MessagePublisherImplTest {
 
     @Test
     void retries() {
-      assertEquals(3, new Config(defaultProperties).getRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 5);
-      assertEquals(5, new Config(defaultProperties).getRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, null);
-      assertEquals(1, new Config(defaultProperties).getRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 0);
-      assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+      assertAll(
+          () -> assertEquals(3, new Config(defaultProperties).getRetries()),
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 5);
+            assertEquals(5, new Config(defaultProperties).getRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, null);
+            assertEquals(1, new Config(defaultProperties).getRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 0);
+            assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, "aString");
+            assertEquals(1, new Config(defaultProperties).getRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, "22");
+            assertEquals(22, new Config(defaultProperties).getRetries());
+          }
+      );
     }
 
     @Test
     void pauseBetweenRetries() {
-      assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 300);
-      assertEquals(300000, new Config(defaultProperties).getPauseBetweenRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, null);
-      assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 0);
-      assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+      assertAll(
+          () -> assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries()),
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 300);
+            assertEquals(300000, new Config(defaultProperties).getPauseBetweenRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, null);
+            assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 0);
+            assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, "aString");
+            assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, "22");
+            assertEquals(22000, new Config(defaultProperties).getPauseBetweenRetries());
+          }
+      );
     }
 
     @Test
     void webhookURI() {
-      assertEquals(URI.create("https://test.uri.com"), new Config(defaultProperties).getWebhookURI());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://github.com");
-      assertEquals(URI.create("https://github.com"), new Config(defaultProperties).getWebhookURI());
-
-      defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, null);
-      assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
-
-      defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "everything but no URI");
-      assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+      assertAll(
+          () -> assertEquals(URI.create("https://test.uri.com"), new Config(defaultProperties).getWebhookURI()),
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://github.com");
+            assertEquals(URI.create("https://github.com"), new Config(defaultProperties).getWebhookURI());
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, null);
+            assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+          },
+          () -> {
+            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "everything but no URI");
+            assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
+          }
+      );
     }
   }
 }
