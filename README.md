@@ -15,11 +15,10 @@ Add dependency to your project
 Create publisher per channel
 ```java
 final String uri = "https://teams.proxy.url/webhook/TEAM_ID/IncomingWebhook/CHANNEL_ID/WEBHOOK_ID";
-final Map<String, Object> configMap = Collections.singletonMap(MessagePublisher.PROPERTY_WEBHOOK_URI, uri);
-final MessagePublisher channelPublisher = MessagePublisher.getInstance(configMap);
+final MessagePublisher channelPublisher = MessagePublisher.getInstance(uri);
 ```
 
-Now you can publish Message via publisher (e.g., using simple Message)
+Now you can publish any message using MessagePublisher (e.g., create and publish a simple message)
 ```java
 final MessageCard msg = MessageCardFactory.createSimpleMessageCard("MyTitle", "MyMessage: Hello MFA-Team");
 channelPublisher.publish(msg);
