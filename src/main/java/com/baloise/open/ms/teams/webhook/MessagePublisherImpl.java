@@ -32,10 +32,15 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class MessagePublisherImpl implements MessagePublisher {
 
   private static final Logger LOG = LogManager.getLogger(MessagePublisherImpl.class);
+  static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
   private final Config config;
 
@@ -54,8 +59,27 @@ class MessagePublisherImpl implements MessagePublisher {
                            .setContentType(ContentType.APPLICATION_JSON)
                            .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
-    //TODO: schedule with timeout instead fixed retries
-    for (int i = 0; i < config.getRetries(); i++) {
+    EXECUTOR_SERVICE.scheduleWithFixedDelay(new HttpClientPostExecutor(httpPost),
+        0,
+        config.getPauseBetweenRetries(),
+        TimeUnit.MILLISECONDS);
+  }
+
+  public Config getConfig() {
+    return config;
+  }
+
+  private class HttpClientPostExecutor implements Runnable {
+
+    final HttpPost httpPost;
+    final AtomicInteger execCounter = new AtomicInteger(0);
+
+    HttpClientPostExecutor(final HttpPost httpPost) {
+      this.httpPost = httpPost;
+    }
+
+    @Override
+    public void run() {
       try (final CloseableHttpClient httpclient = HttpClients.createDefault();
            final CloseableHttpResponse response = httpclient.execute(httpPost)) {
 
@@ -65,23 +89,24 @@ class MessagePublisherImpl implements MessagePublisher {
         EntityUtils.consume(entity);
 
         if (HttpStatus.SC_OK == responseCode) {
+          EXECUTOR_SERVICE.shutdown();
           return;
         }
 
-        LOG.warn(String.format("Posting data to %s may have failed. Webhook responded with status code %s, %s", config.getWebhookURI(), responseCode, body));
+        LOG.warn(String.format("Posting data to %s may have failed. Webhook responded with status code %s", config.getWebhookURI(), responseCode));
         LOG.debug(body);
 
-        //TODO: schedule with timeout instead fixed retries
-        if (config.getRetries() != i + 1) {
-          Thread.sleep(config.getPauseBetweenRetries());
+        if (config.getRetries() == execCounter.incrementAndGet()) {
+          LOG.warn(String.format("Giving up after %d attempts.", config.getRetries()));
+          EXECUTOR_SERVICE.shutdown();
+        } else {
+          LOG.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
         }
+
       } catch (Exception e) {
         LOG.error("Failed to post data to webhook " + config.getWebhookURI(), e);
+        EXECUTOR_SERVICE.shutdown();
       }
     }
-  }
-
-  public Config getConfig() {
-    return config;
   }
 }

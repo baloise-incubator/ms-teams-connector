@@ -23,6 +23,8 @@ import java.util.Map;
 
 public interface MessagePublisher {
 
+  //TODO: Use enum instead of constants
+
   /**
    * defines the number of retires in case of technical interruptions
    */
@@ -47,7 +49,7 @@ public interface MessagePublisher {
     if(customProperties != null) {
       customProperties.forEach((key, value) -> defaultProperties.merge(key, value, (k1, v1) -> value));
     }
-    return new MessagePublisherImpl(customProperties);
+    return new MessagePublisherImpl(defaultProperties);
   }
 
   void publish(MessageCard messageCard);
