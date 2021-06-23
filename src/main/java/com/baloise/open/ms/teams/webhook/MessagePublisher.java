@@ -23,8 +23,6 @@ import java.util.Map;
 
 public interface MessagePublisher {
 
-  //TODO: Use enum instead of constants
-
   /**
    * defines the number of retires in case of technical interruptions
    */
@@ -52,7 +50,15 @@ public interface MessagePublisher {
     return new MessagePublisherImpl(defaultProperties);
   }
 
+  /**
+   * transmits provided MessageCard as parsed JSON String to webhook
+   */
   void publish(MessageCard messageCard);
+
+  /**
+   * transmits provided jsonfied String to configured webhook
+   */
+  void publish(String jsonBody);
 
   static Map<String, Object> getDefaultProperties() {
     final HashMap<String, Object> properties = new HashMap<>();

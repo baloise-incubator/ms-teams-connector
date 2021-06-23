@@ -17,6 +17,7 @@ package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.MessageCard;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -43,33 +44,41 @@ class MessagePublisherImpl implements MessagePublisher {
   static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
   private final Config config;
+  final HttpPost httpPost;
 
   MessagePublisherImpl(final Map<String, Object> properties) {
-    LOG.info(properties);
+    LOG.debug(properties);
     config = new Config(properties);
+    httpPost = new HttpPost(config.getWebhookURI());
   }
 
   @Override
   public void publish(final MessageCard messageCard) {
-    final HttpPost httpPost = new HttpPost(config.getWebhookURI());
-    final String postBody = new GsonBuilder().create().toJson(messageCard);
+    final Gson gson = new GsonBuilder().create();
+    scheduleMessagePublishing(gson.toJson(messageCard), httpPost);
+  }
 
+  @Override
+  public void publish(String jsonBody) {
+    scheduleMessagePublishing(jsonBody, httpPost);
+  }
+
+  void scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
     httpPost.setEntity(EntityBuilder.create()
-                           .setText(postBody)
+                           .setText(jsonBody)
                            .setContentType(ContentType.APPLICATION_JSON)
                            .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
     EXECUTOR_SERVICE.scheduleWithFixedDelay(new HttpClientPostExecutor(httpPost),
-        0,
-        config.getPauseBetweenRetries(),
-        TimeUnit.MILLISECONDS);
+        0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
   }
+
 
   public Config getConfig() {
     return config;
   }
 
-  private class HttpClientPostExecutor implements Runnable {
+  private final class HttpClientPostExecutor implements Runnable {
 
     final HttpPost httpPost;
     final AtomicInteger execCounter = new AtomicInteger(0);
@@ -93,8 +102,11 @@ class MessagePublisherImpl implements MessagePublisher {
           return;
         }
 
-        LOG.warn(String.format("Posting data to %s may have failed. Webhook responded with status code %s", config.getWebhookURI(), responseCode));
         LOG.debug(body);
+        throw new RuntimeException(String.format("Posting data to %s may have failed. Webhook responded with status code %s", config.getWebhookURI(), responseCode));
+
+      } catch (Exception e) {
+        LOG.warn(e.getMessage());
 
         if (config.getRetries() == execCounter.incrementAndGet()) {
           LOG.warn(String.format("Giving up after %d attempts.", config.getRetries()));
@@ -102,10 +114,6 @@ class MessagePublisherImpl implements MessagePublisher {
         } else {
           LOG.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
         }
-
-      } catch (Exception e) {
-        LOG.error("Failed to post data to webhook " + config.getWebhookURI(), e);
-        EXECUTOR_SERVICE.shutdown();
       }
     }
   }

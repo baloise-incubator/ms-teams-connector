@@ -1,12 +1,21 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -142,6 +151,37 @@ class MessagePublisherImplTest {
             assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
           }
       );
+    }
+  }
+
+  @Nested
+  @DisplayName("Test webhook MessagePublisher")
+  class MessagePublisherTest {
+
+    private Map<String, Object> getTestProperties() {
+      final Map<String, Object> testProperties = MessagePublisher.getDefaultProperties();
+      testProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://test.webhook.com/");
+      testProperties.put(MessagePublisher.PROPERTY_RETRIES, 1);
+      testProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1);
+      return testProperties;
+    }
+
+    @Test
+    @DisplayName("HttpEntity using String publishing")
+    void testStringPublishing() throws IOException {
+      final String testMessage = "I should be some JSON content";
+      ArgumentCaptor<HttpEntity> httpEntityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+      final HttpPost httpPostMock = Mockito.mock(HttpPost.class);
+      Mockito.doNothing().when(httpPostMock).setEntity(httpEntityCaptor.capture());
+
+      final MessagePublisherImpl testee = new MessagePublisherImpl(getTestProperties());
+      testee.scheduleMessagePublishing(testMessage, httpPostMock);
+
+      final HttpEntity entity = httpEntityCaptor.getValue();
+      assertNotNull(entity);
+      assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType().getValue());
+      assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding().getValue());
+      assertEquals(testMessage, new BufferedReader(new InputStreamReader(entity.getContent())).readLine());
     }
   }
 }
