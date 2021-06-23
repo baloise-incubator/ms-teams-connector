@@ -2,6 +2,8 @@
 Utilize a [MessageCard](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) 
 and publish it to a MS-Teams channel via webhook.
 
+Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank"><b>Roland Seidel</b></a> for the idea and his reference implementation.
+
 ## Usage
 Add dependency to your project
 ```xml
@@ -26,9 +28,13 @@ channelPublisher.publish(msg);
 
 ![Example](docs/img/result_example.png)
 
-## Config
+## Configuration
 
-TODO: implement
+|Parameter|Default|Description|
+|---------|-------|-----------|
+|PROPERTY_RETRIES|3|Defines the number of retries to publish the message in case of unsuccessful answer from webhook. Accepts any positive integer > 0.|
+|PROPERTY_RETRY_PAUSE|60|Defines the pause time between PROPERTY_RETRIES in seconds. Accepts any positive integer > 0.|
+|PROPERTY_WEBHOOK_URI|none|The URI to your webhook. Required property provided either as String or URI.|
 
 ## MessageCard creation
 
