@@ -20,6 +20,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -32,6 +33,16 @@ public class Section {
   private Boolean markdown;
 
   public void addFact(Fact fact) {
-    facts.add(fact);
+    if (!facts.contains(fact)) {
+      facts.add(fact);
+    }
+  }
+
+  public void addFacts(final Map<String, Object> factProperties) {
+    if (factProperties == null || factProperties.isEmpty()) {
+      return;
+    }
+
+    factProperties.forEach((name, value) -> addFact(new Fact(name, String.valueOf(value))));
   }
 }

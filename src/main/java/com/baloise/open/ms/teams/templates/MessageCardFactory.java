@@ -15,6 +15,8 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import java.util.Map;
+
 public final class MessageCardFactory {
 
   private MessageCardFactory() {
@@ -26,4 +28,11 @@ public final class MessageCardFactory {
     messageCard.addSection(Section.builder().activityTitle(title).activitySubtitle(message).build());
     return messageCard;
   }
+
+  public static MessageCard createSimpleMessageCard(final String title, final String message, Map<String, Object> facts) {
+    final MessageCard messageCard = createSimpleMessageCard(title, message);
+    messageCard.getSections().get(0).addFacts(facts);
+    return messageCard;
+  }
+
 }
