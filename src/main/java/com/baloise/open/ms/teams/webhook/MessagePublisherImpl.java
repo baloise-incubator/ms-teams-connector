@@ -32,9 +32,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,6 +47,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
   private final Config config;
   final HttpPost httpPost;
+  final Map<HttpClientPostExecutor, ScheduledFuture<?>> scheduledRuns = new HashMap<>();
 
   MessagePublisherImpl(final Map<String, Object> properties) {
     LOG.debug(properties);
@@ -65,16 +68,17 @@ class MessagePublisherImpl implements MessagePublisher {
 
   void scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
     httpPost.setEntity(EntityBuilder.create()
-                           .setText(jsonBody)
-                           .setContentType(ContentType.APPLICATION_JSON)
-                           .setContentEncoding(StandardCharsets.UTF_8.name()).build());
+        .setText(jsonBody)
+        .setContentType(ContentType.APPLICATION_JSON)
+        .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
-    EXECUTOR_SERVICE.scheduleWithFixedDelay(new HttpClientPostExecutor(httpPost),
+    final HttpClientPostExecutor httpClientPostExecutor = new HttpClientPostExecutor(httpPost);
+    final ScheduledFuture<?> scheduledFuture = EXECUTOR_SERVICE.scheduleWithFixedDelay(httpClientPostExecutor,
         0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
+    this.scheduledRuns.put(httpClientPostExecutor, scheduledFuture);
   }
 
-
-  public Config getConfig() {
+  Config getConfig() {
     return config;
   }
 
@@ -98,7 +102,7 @@ class MessagePublisherImpl implements MessagePublisher {
         EntityUtils.consume(entity);
 
         if (HttpStatus.SC_OK == responseCode) {
-          EXECUTOR_SERVICE.shutdown();
+          cancel();
           return;
         }
 
@@ -110,11 +114,17 @@ class MessagePublisherImpl implements MessagePublisher {
 
         if (config.getRetries() == execCounter.incrementAndGet()) {
           LOG.warn(String.format("Giving up after %d attempts.", config.getRetries()));
-          EXECUTOR_SERVICE.shutdown();
+          cancel();
         } else {
           LOG.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
         }
       }
+    }
+
+    private void cancel() {
+      final ScheduledFuture<?> scheduledFuture = scheduledRuns.get(this);
+      scheduledRuns.remove(this);
+      scheduledFuture.cancel(false);
     }
   }
 }

@@ -2,14 +2,24 @@ package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.configuration.ConfigurationProperties;
+import org.mockserver.junit.jupiter.MockServerExtension;
+import org.mockserver.matchers.Times;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+import org.mockserver.model.MediaType;
+import org.mockserver.verify.VerificationTimes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -156,7 +166,10 @@ class MessagePublisherImplTest {
 
   @Nested
   @DisplayName("Test webhook MessagePublisher")
+  @ExtendWith(MockServerExtension.class)
   class MessagePublisherTest {
+
+    private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
 
     private Map<String, Object> getTestProperties() {
       final Map<String, Object> testProperties = MessagePublisher.getDefaultProperties();
@@ -167,9 +180,8 @@ class MessagePublisherImplTest {
     }
 
     @Test
-    @DisplayName("HttpEntity using String publishing")
+    @DisplayName("HttpEntity is created applying text, contentType and encoding")
     void testStringPublishing() throws IOException {
-      final String testMessage = "I should be some JSON content";
       ArgumentCaptor<HttpEntity> httpEntityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
       final HttpPost httpPostMock = Mockito.mock(HttpPost.class);
       Mockito.doNothing().when(httpPostMock).setEntity(httpEntityCaptor.capture());
@@ -182,6 +194,77 @@ class MessagePublisherImplTest {
       assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType().getValue());
       assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding().getValue());
       assertEquals(testMessage, new BufferedReader(new InputStreamReader(entity.getContent())).readLine());
+    }
+
+    @Test
+    @DisplayName("POST is executed inside EXECUTOR_SERVICE matching request at first try")
+    void testPostHappyCase(MockServerClient client) {
+      final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
+      testee.publish(testMessage);
+
+      final HttpRequest mockedPost = HttpRequest.request()
+          .withMethod("POST")
+          .withContentType(MediaType.JSON_UTF_8)
+          .withBody(testMessage);
+
+      client.verify(mockedPost, VerificationTimes.exactly(1));
+      assertTrue(testee.getConfig().getRetries() > 1);
+      client.reset();
+    }
+
+    @Test
+    @DisplayName("POST is executed 2 times during failure")
+    void test2RetriesInCaseOfFailure(MockServerClient client) throws InterruptedException {
+      testRetrials(client, 1);
+    }
+
+    @Test
+    @DisplayName("POST is executed 3 times during failure")
+    void test3RetriesInCaseOfFailure(MockServerClient client) throws InterruptedException {
+      testRetrials(client, 2);
+    }
+
+    private void testRetrials(MockServerClient client, int numberOf504Replies) throws InterruptedException {
+      ConfigurationProperties.maxSocketTimeout(5000);
+      final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+      client.when(
+          // mock first n calls replying with 504
+          mockedPost, Times.exactly(numberOf504Replies)
+      ).respond(
+          HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+      );
+      client.when(
+          // n+1 call shall be successful
+          mockedPost, Times.exactly(numberOf504Replies + 1)
+      ).respond(
+          HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+      );
+
+      final Map<String, Object> properties = MessagePublisher.getDefaultProperties();
+      final String expectedUri = getExtractedUri(client);
+      properties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, expectedUri);
+      properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1); // speed up the test
+      final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
+
+      testee.publish(testMessage);
+
+      assertEquals(3, testee.getConfig().getRetries());
+      assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
+
+      Thread.sleep(4000); // wait for executor service
+      client.verify(
+          mockedPost
+              .withContentType(MediaType.JSON_UTF_8)
+              .withBody(testMessage),
+          VerificationTimes.exactly(numberOf504Replies + 1)
+      );
+      client.reset();
+    }
+
+    private String getExtractedUri(MockServerClient client) {
+      return String.format("http://%s:%d",
+          client.remoteAddress().getAddress().getHostAddress(),
+          client.remoteAddress().getPort());
     }
   }
 }
