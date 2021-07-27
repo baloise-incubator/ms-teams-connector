@@ -22,7 +22,6 @@ import org.mockserver.model.MediaType;
 import org.mockserver.verify.VerificationTimes;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -181,7 +180,7 @@ class MessagePublisherImplTest {
 
     @Test
     @DisplayName("HttpEntity is created applying text, contentType and encoding")
-    void testStringPublishing() throws IOException {
+    void testStringPublishing() {
       ArgumentCaptor<HttpEntity> httpEntityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
       final HttpPost httpPostMock = Mockito.mock(HttpPost.class);
       Mockito.doNothing().when(httpPostMock).setEntity(httpEntityCaptor.capture());
@@ -190,10 +189,17 @@ class MessagePublisherImplTest {
       testee.scheduleMessagePublishing(testMessage, httpPostMock);
 
       final HttpEntity entity = httpEntityCaptor.getValue();
-      assertNotNull(entity);
-      assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType().getValue());
-      assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding().getValue());
-      assertEquals(testMessage, new BufferedReader(new InputStreamReader(entity.getContent())).readLine());
+      assertAll(
+          () -> assertNotNull(entity),
+          () -> assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType().getValue()),
+          () -> assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding().getValue()),
+          () -> {
+            try (final InputStreamReader in = new InputStreamReader(entity.getContent());
+                 final BufferedReader bufferedReader = new BufferedReader(in)) {
+              assertEquals(testMessage, bufferedReader.readLine());
+            }
+          }
+      );
     }
 
     @Test
