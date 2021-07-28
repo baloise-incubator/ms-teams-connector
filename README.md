@@ -1,3 +1,7 @@
+[![CI](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=baloise-incubator_ms-teams-connector&metric=alert_status)](https://sonarcloud.io/dashboard?id=baloise-incubator_ms-teams-connector)
+[![DepShield Badge](https://depshield.sonatype.org/badges/baloise-incubator/ms-teams-connector/depshield.svg)](https://depshield.github.io)
+
 # ms-teams-connector
 Utilize a [MessageCard](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using) 
 and publish it to a MS-Teams channel via webhook.
