@@ -107,7 +107,8 @@ class MessagePublisherImpl implements MessagePublisher {
         }
 
         LOG.debug(body);
-        throw new RuntimeException(String.format("Posting data to %s may have failed. Webhook responded with status code %s", config.getWebhookURI(), responseCode));
+        throw new IllegalStateException(String.format("Posting data to %s may have failed. Webhook responded with status code %s",
+            config.getWebhookURI(), responseCode));
 
       } catch (Exception e) {
         LOG.warn(e.getMessage());

@@ -77,7 +77,7 @@ public final class Config {
         throw new IllegalArgumentException(String.format("Parameter %s must not be 0 or negative (%d).", MessagePublisher.PROPERTY_RETRY_PAUSE, longValue));
       }
     } catch (NumberFormatException e) {
-      LOG.warn("Failed to process parameter " + MessagePublisher.PROPERTY_RETRY_PAUSE + ": " + e);
+      LOG.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRY_PAUSE, e));
       return _default;
     }
   }
@@ -101,7 +101,7 @@ public final class Config {
         throw new IllegalArgumentException(String.format("Parameter %s must be greater or equal 1 (%d).", MessagePublisher.PROPERTY_RETRIES, intVal));
       }
     } catch (NumberFormatException e) {
-      LOG.warn("Failed to process parameter " + MessagePublisher.PROPERTY_RETRIES + ": " + e);
+      LOG.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRIES, e));
       return _default;
     }
   }

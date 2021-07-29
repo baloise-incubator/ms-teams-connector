@@ -20,7 +20,7 @@ import lombok.Getter;
 @Getter
 public abstract class Input {
 
-  public Input(String id, String title) {
+  protected Input(String id, String title) {
     this.id = id;
     this.title = title;
   }
