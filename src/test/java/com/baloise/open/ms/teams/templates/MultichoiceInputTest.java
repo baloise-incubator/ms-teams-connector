@@ -13,8 +13,10 @@ class MultichoiceInputTest extends PropertyReflectionTest {
 
   @Test
   void verifyNumberOfProperties() {
-    this.assertNumberOfProperties(Input.class, 2);
-    this.assertNumberOfProperties(MultichoiceInput.class, 3);
+    assertAll(
+        () -> this.assertNumberOfProperties(Input.class, 2),
+        () -> this.assertNumberOfProperties(MultichoiceInput.class, 3)
+    );
   }
 
   @Test
