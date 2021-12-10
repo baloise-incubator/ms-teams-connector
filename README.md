@@ -40,6 +40,3 @@ channelPublisher.publish(msg);
 |PROPERTY_RETRY_PAUSE|60|Defines the pause time between PROPERTY_RETRIES in seconds. Accepts any positive integer > 0.|
 |PROPERTY_WEBHOOK_URI|none|The URI to your webhook. Required property provided either as String or URI.|
 
-## MessageCard creation
-
-TODO: implement
