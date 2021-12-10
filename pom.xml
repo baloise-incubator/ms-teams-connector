@@ -109,7 +109,27 @@
           <reportsDirectory>${project.build.directory}/surefire</reportsDirectory>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.16</version>
+        <executions>
+          <execution>
+            <id>add-third-party</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>.</directory>
+        <includes>
+          <include>LICENSE</include>
+        </includes>
+      </resource>
   </build>
 
   <dependencies>
