@@ -15,19 +15,19 @@
  */
 package com.baloise.open.ms.teams;
 
-import com.baloise.open.ms.teams.webhook.MessagePublisher;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.baloise.open.ms.teams.webhook.MessagePublisher;
+
+@Slf4j
 @Getter
 public final class Config {
-
-  private static final Logger LOG = LogManager.getLogger(Config.class);
 
   private final int retries;
   private final long pauseBetweenRetries;
@@ -77,7 +77,7 @@ public final class Config {
         throw new IllegalArgumentException(String.format("Parameter %s must not be 0 or negative (%d).", MessagePublisher.PROPERTY_RETRY_PAUSE, longValue));
       }
     } catch (NumberFormatException e) {
-      LOG.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRY_PAUSE, e));
+      log.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRY_PAUSE, e));
       return _default;
     }
   }
@@ -101,7 +101,7 @@ public final class Config {
         throw new IllegalArgumentException(String.format("Parameter %s must be greater or equal 1 (%d).", MessagePublisher.PROPERTY_RETRIES, intVal));
       }
     } catch (NumberFormatException e) {
-      LOG.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRIES, e));
+      log.warn(String.format("Failed to process parameter %s: %s", MessagePublisher.PROPERTY_RETRIES, e));
       return _default;
     }
   }

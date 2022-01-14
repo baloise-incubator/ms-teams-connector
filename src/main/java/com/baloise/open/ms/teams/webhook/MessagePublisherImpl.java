@@ -15,21 +15,7 @@
  */
 package com.baloise.open.ms.teams.webhook;
 
-import com.baloise.open.ms.teams.Config;
-import com.baloise.open.ms.teams.templates.MessageCard;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -40,9 +26,24 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.templates.MessageCard;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+@Slf4j
 class MessagePublisherImpl implements MessagePublisher {
 
-  private static final Logger LOG = LogManager.getLogger(MessagePublisherImpl.class);
   static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
 
   private final Config config;
@@ -50,7 +51,7 @@ class MessagePublisherImpl implements MessagePublisher {
   final Map<HttpClientPostExecutor, ScheduledFuture<?>> scheduledRuns = new HashMap<>();
 
   MessagePublisherImpl(final Map<String, Object> properties) {
-    LOG.debug(properties);
+    log.debug(properties.toString());
     config = new Config(properties);
     httpPost = new HttpPost(config.getWebhookURI());
   }
@@ -106,18 +107,18 @@ class MessagePublisherImpl implements MessagePublisher {
           return;
         }
 
-        LOG.debug(body);
+        log.debug(body);
         throw new IllegalStateException(String.format("Posting data to %s may have failed. Webhook responded with status code %s",
             config.getWebhookURI(), responseCode));
 
       } catch (Exception e) {
-        LOG.warn(e.getMessage());
+        log.warn(e.getMessage());
 
         if (config.getRetries() == execCounter.incrementAndGet()) {
-          LOG.warn(String.format("Giving up after %d attempts.", config.getRetries()));
+          log.warn(String.format("Giving up after %d attempts.", config.getRetries()));
           cancel();
         } else {
-          LOG.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
+          log.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
         }
       }
     }

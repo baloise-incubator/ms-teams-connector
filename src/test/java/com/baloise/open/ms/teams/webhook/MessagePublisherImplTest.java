@@ -42,7 +42,7 @@ class MessagePublisherImplTest {
 
   @Nested
   @DisplayName("Test interface defaults")
-  class InterfaceDefaults {
+  class InterfaceDefaultsTest {
 
     @Test
     @DisplayName("Verfiy DefaultProperties to be complete")
@@ -76,7 +76,7 @@ class MessagePublisherImplTest {
 
   @Nested
   @DisplayName("Test Config class properties")
-  class ConfigProperyInit {
+  class ConfigProperyInitTest {
 
     @BeforeEach
     void setUp() {
