@@ -18,11 +18,9 @@ package com.baloise.open.ms.teams.webhook;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,11 +42,8 @@ import com.google.gson.GsonBuilder;
 @Slf4j
 class MessagePublisherImpl implements MessagePublisher {
 
-  static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
-
   private final Config config;
   final HttpPost httpPost;
-  final Map<HttpClientPostExecutor, ScheduledFuture<?>> scheduledRuns = new HashMap<>();
 
   MessagePublisherImpl(final Map<String, Object> properties) {
     log.debug(properties.toString());
@@ -73,10 +68,9 @@ class MessagePublisherImpl implements MessagePublisher {
         .setContentType(ContentType.APPLICATION_JSON)
         .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
-    final HttpClientPostExecutor httpClientPostExecutor = new HttpClientPostExecutor(httpPost);
-    final ScheduledFuture<?> scheduledFuture = EXECUTOR_SERVICE.scheduleWithFixedDelay(httpClientPostExecutor,
-        0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
-    this.scheduledRuns.put(httpClientPostExecutor, scheduledFuture);
+    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
+    executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
   }
 
   Config getConfig() {
@@ -85,10 +79,12 @@ class MessagePublisherImpl implements MessagePublisher {
 
   private final class HttpClientPostExecutor implements Runnable {
 
+    final ScheduledExecutorService scheduledExecutorService;
     final HttpPost httpPost;
     final AtomicInteger execCounter = new AtomicInteger(0);
 
-    HttpClientPostExecutor(final HttpPost httpPost) {
+    HttpClientPostExecutor(final HttpPost httpPost, ScheduledExecutorService executor) {
+      this.scheduledExecutorService = executor;
       this.httpPost = httpPost;
     }
 
@@ -103,6 +99,7 @@ class MessagePublisherImpl implements MessagePublisher {
         EntityUtils.consume(entity);
 
         if (HttpStatus.SC_OK == responseCode) {
+          log.debug("Webhook {} return with HttpStatus 200.", config.getWebhookURI());
           cancel();
           return;
         }
@@ -124,9 +121,8 @@ class MessagePublisherImpl implements MessagePublisher {
     }
 
     private void cancel() {
-      final ScheduledFuture<?> scheduledFuture = scheduledRuns.get(this);
-      scheduledRuns.remove(this);
-      scheduledFuture.cancel(false);
+      log.debug("Shutdown scheduled executor service");
+      scheduledExecutorService.shutdown();
     }
   }
 }
