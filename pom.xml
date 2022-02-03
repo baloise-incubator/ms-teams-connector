@@ -24,7 +24,7 @@
 
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.1.5</version>
+  <version>0.1.6-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>MS-TEAMS conenctor </name>
@@ -47,7 +47,7 @@
   <scm>
     <url>https://github.com/baloise-incubator/ms-teams-connector.git</url>
     <connection>scm:git:https://github.com/baloise-incubator/ms-teams-connector.git</connection>
-    <tag>ms-teams-connector-0.1.5</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
