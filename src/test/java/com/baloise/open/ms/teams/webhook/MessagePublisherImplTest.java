@@ -1,6 +1,8 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.templates.MessageCard;
+import com.google.gson.GsonBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
@@ -30,7 +32,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessagePublisherImplTest {
 
@@ -202,6 +209,25 @@ class MessagePublisherImplTest {
             }
           }
       );
+    }
+
+    @Test
+    @DisplayName("HttpEntity is created applying content from MessageCard, contentType and encoding")
+    void testMessagCardPublishing(MockServerClient client) {
+      final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
+      final MessageCard messageCard = new MessageCard("MyTitle", "MySummary");
+
+      ScheduledFuture<?> publishedFuture = testee.publish(messageCard);
+      assertNotNull(publishedFuture);
+
+      final HttpRequest mockedPost = HttpRequest.request()
+          .withMethod("POST")
+          .withContentType(MediaType.JSON_UTF_8)
+          .withBody(new GsonBuilder().create().toJson(messageCard));
+
+      client.verify(mockedPost, VerificationTimes.exactly(1));
+      assertTrue(testee.getConfig().getRetries() > 1);
+      client.reset();
     }
 
     @Test
