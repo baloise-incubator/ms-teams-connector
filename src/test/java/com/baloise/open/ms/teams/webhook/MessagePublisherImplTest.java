@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,7 +59,7 @@ class MessagePublisherImplTest {
     }
 
     @Test
-    @DisplayName("Verfiy DefaultProperties overwritten by input")
+    @DisplayName("Verify DefaultProperties overwritten by input")
     void testDefaultPropertiesOverwritten() {
       final Map<String, Object> properties = new HashMap<>();
       properties.put(MessagePublisher.PROPERTY_RETRIES, 5);
@@ -76,7 +77,7 @@ class MessagePublisherImplTest {
 
   @Nested
   @DisplayName("Test Config class properties")
-  class ConfigProperyInitTest {
+  class ConfigPropertyInitTest {
 
     @BeforeEach
     void setUp() {
@@ -186,7 +187,8 @@ class MessagePublisherImplTest {
       Mockito.doNothing().when(httpPostMock).setEntity(httpEntityCaptor.capture());
 
       final MessagePublisherImpl testee = new MessagePublisherImpl(getTestProperties());
-      testee.scheduleMessagePublishing(testMessage, httpPostMock);
+      ScheduledFuture<?> publishedFuture = testee.scheduleMessagePublishing(testMessage, httpPostMock);
+      assertNotNull(publishedFuture);
 
       final HttpEntity entity = httpEntityCaptor.getValue();
       assertAll(
@@ -206,7 +208,8 @@ class MessagePublisherImplTest {
     @DisplayName("POST is executed inside EXECUTOR_SERVICE matching request at first try")
     void testPostHappyCase(MockServerClient client) {
       final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
-      testee.publish(testMessage);
+      ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+      assertNotNull(publishedFuture);
 
       final HttpRequest mockedPost = HttpRequest.request()
           .withMethod("POST")
@@ -252,7 +255,8 @@ class MessagePublisherImplTest {
       properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1); // speed up the test
       final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
 
-      testee.publish(testMessage);
+      ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+      assertNotNull(publishedFuture);
 
       assertEquals(3, testee.getConfig().getRetries());
       assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());

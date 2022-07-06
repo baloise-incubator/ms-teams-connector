@@ -14,7 +14,7 @@ Add dependency to your project
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.1.5</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
@@ -27,7 +27,7 @@ final MessagePublisher channelPublisher = MessagePublisher.getInstance(uri);
 Now you can publish any message using MessagePublisher (e.g., create and publish a simple message)
 ```java
 final MessageCard msg = MessageCardFactory.createSimpleMessageCard("MyTitle", "MyMessage: Hello MFA-Team");
-channelPublisher.publish(msg);
+ScheduledFuture<?> publishedFuture = channelPublisher.publish(msg);
 ```
 
 ![Example](docs/img/result_example.png)

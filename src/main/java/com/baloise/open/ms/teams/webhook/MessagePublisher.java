@@ -20,6 +20,7 @@ import com.baloise.open.ms.teams.templates.MessageCard;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 public interface MessagePublisher {
 
@@ -53,12 +54,12 @@ public interface MessagePublisher {
   /**
    * transmits provided MessageCard as parsed JSON String to webhook
    */
-  void publish(MessageCard messageCard);
+  ScheduledFuture<?> publish(MessageCard messageCard);
 
   /**
    * transmits provided jsonfied String to configured webhook
    */
-  void publish(String jsonBody);
+  ScheduledFuture<?> publish(String jsonBody);
 
   static Map<String, Object> getDefaultProperties() {
     final HashMap<String, Object> properties = new HashMap<>();
