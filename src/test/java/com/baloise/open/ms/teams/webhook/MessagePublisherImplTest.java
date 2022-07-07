@@ -1,6 +1,8 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.templates.MessageCard;
+import com.google.gson.GsonBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
@@ -28,8 +30,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessagePublisherImplTest {
 
@@ -58,7 +66,7 @@ class MessagePublisherImplTest {
     }
 
     @Test
-    @DisplayName("Verfiy DefaultProperties overwritten by input")
+    @DisplayName("Verify DefaultProperties overwritten by input")
     void testDefaultPropertiesOverwritten() {
       final Map<String, Object> properties = new HashMap<>();
       properties.put(MessagePublisher.PROPERTY_RETRIES, 5);
@@ -76,7 +84,7 @@ class MessagePublisherImplTest {
 
   @Nested
   @DisplayName("Test Config class properties")
-  class ConfigProperyInitTest {
+  class ConfigPropertyInitTest {
 
     @BeforeEach
     void setUp() {
@@ -186,7 +194,8 @@ class MessagePublisherImplTest {
       Mockito.doNothing().when(httpPostMock).setEntity(httpEntityCaptor.capture());
 
       final MessagePublisherImpl testee = new MessagePublisherImpl(getTestProperties());
-      testee.scheduleMessagePublishing(testMessage, httpPostMock);
+      ScheduledFuture<?> publishedFuture = testee.scheduleMessagePublishing(testMessage, httpPostMock);
+      assertNotNull(publishedFuture);
 
       final HttpEntity entity = httpEntityCaptor.getValue();
       assertAll(
@@ -203,10 +212,30 @@ class MessagePublisherImplTest {
     }
 
     @Test
+    @DisplayName("HttpEntity is created applying content from MessageCard, contentType and encoding")
+    void testMessagCardPublishing(MockServerClient client) {
+      final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
+      final MessageCard messageCard = new MessageCard("MyTitle", "MySummary");
+
+      ScheduledFuture<?> publishedFuture = testee.publish(messageCard);
+      assertNotNull(publishedFuture);
+
+      final HttpRequest mockedPost = HttpRequest.request()
+          .withMethod("POST")
+          .withContentType(MediaType.JSON_UTF_8)
+          .withBody(new GsonBuilder().create().toJson(messageCard));
+
+      client.verify(mockedPost, VerificationTimes.exactly(1));
+      assertTrue(testee.getConfig().getRetries() > 1);
+      client.reset();
+    }
+
+    @Test
     @DisplayName("POST is executed inside EXECUTOR_SERVICE matching request at first try")
     void testPostHappyCase(MockServerClient client) {
       final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
-      testee.publish(testMessage);
+      ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+      assertNotNull(publishedFuture);
 
       final HttpRequest mockedPost = HttpRequest.request()
           .withMethod("POST")
@@ -252,7 +281,8 @@ class MessagePublisherImplTest {
       properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1); // speed up the test
       final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
 
-      testee.publish(testMessage);
+      ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+      assertNotNull(publishedFuture);
 
       assertEquals(3, testee.getConfig().getRetries());
       assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());

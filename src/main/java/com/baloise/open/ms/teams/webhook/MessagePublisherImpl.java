@@ -15,15 +15,11 @@
  */
 package com.baloise.open.ms.teams.webhook;
 
+import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.templates.MessageCard;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.entity.EntityBuilder;
@@ -34,10 +30,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import com.baloise.open.ms.teams.Config;
-import com.baloise.open.ms.teams.templates.MessageCard;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 class MessagePublisherImpl implements MessagePublisher {
@@ -52,17 +51,17 @@ class MessagePublisherImpl implements MessagePublisher {
   }
 
   @Override
-  public void publish(final MessageCard messageCard) {
+  public ScheduledFuture<?> publish(final MessageCard messageCard) {
     final Gson gson = new GsonBuilder().create();
-    scheduleMessagePublishing(gson.toJson(messageCard), httpPost);
+    return scheduleMessagePublishing(gson.toJson(messageCard), httpPost);
   }
 
   @Override
-  public void publish(String jsonBody) {
-    scheduleMessagePublishing(jsonBody, httpPost);
+  public ScheduledFuture<?> publish(String jsonBody) {
+    return scheduleMessagePublishing(jsonBody, httpPost);
   }
 
-  void scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
+  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
     httpPost.setEntity(EntityBuilder.create()
         .setText(jsonBody)
         .setContentType(ContentType.APPLICATION_JSON)
@@ -70,7 +69,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
-    executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
+    return executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
   }
 
   Config getConfig() {
