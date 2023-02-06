@@ -20,15 +20,15 @@ import com.baloise.open.ms.teams.templates.MessageCard;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.EntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -94,7 +94,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
         final HttpEntity entity = response.getEntity();
         final String body = EntityUtils.toString(entity);
-        final int responseCode = response.getStatusLine().getStatusCode();
+        final int responseCode = response.getCode();
         EntityUtils.consume(entity);
 
         if (HttpStatus.SC_OK == responseCode) {

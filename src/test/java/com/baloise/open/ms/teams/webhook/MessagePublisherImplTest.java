@@ -3,10 +3,10 @@ package com.baloise.open.ms.teams.webhook;
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.MessageCard;
 import com.google.gson.GsonBuilder;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -200,8 +200,8 @@ class MessagePublisherImplTest {
       final HttpEntity entity = httpEntityCaptor.getValue();
       assertAll(
           () -> assertNotNull(entity),
-          () -> assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType().getValue()),
-          () -> assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding().getValue()),
+          () -> assertEquals(ContentType.APPLICATION_JSON.toString(), entity.getContentType()),
+          () -> assertEquals(StandardCharsets.UTF_8.toString(), entity.getContentEncoding()),
           () -> {
             try (final InputStreamReader in = new InputStreamReader(entity.getContent());
                  final BufferedReader bufferedReader = new BufferedReader(in)) {
