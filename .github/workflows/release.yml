@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@main # don't get confused by @main - it is the version of the checkout action. You repo will be checked out with ${{ github.ref }}
+        uses: actions/checkout@main
       - name: Deploy to Github Package Registry
         env:
             GITHUB_USERNAME: x-access-token
