@@ -20,15 +20,15 @@ import com.baloise.open.ms.teams.templates.MessageCard;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -42,12 +42,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 class MessagePublisherImpl implements MessagePublisher {
 
   private final Config config;
-  final HttpPost httpPost;
+  final ClassicHttpRequest httpPost;
 
   MessagePublisherImpl(final Map<String, Object> properties) {
     log.debug(properties.toString());
     config = new Config(properties);
-    httpPost = new HttpPost(config.getWebhookURI());
+    httpPost = ClassicRequestBuilder.post(config.getWebhookURI()).build();
   }
 
   @Override
@@ -61,7 +61,7 @@ class MessagePublisherImpl implements MessagePublisher {
     return scheduleMessagePublishing(jsonBody, httpPost);
   }
 
-  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
+  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, ClassicHttpRequest httpPost) {
     httpPost.setEntity(EntityBuilder.create()
         .setText(jsonBody)
         .setContentType(ContentType.APPLICATION_JSON)
@@ -79,33 +79,35 @@ class MessagePublisherImpl implements MessagePublisher {
   private final class HttpClientPostExecutor implements Runnable {
 
     final ScheduledExecutorService scheduledExecutorService;
-    final HttpPost httpPost;
+    final ClassicHttpRequest httpPost;
     final AtomicInteger execCounter = new AtomicInteger(0);
 
-    HttpClientPostExecutor(final HttpPost httpPost, ScheduledExecutorService executor) {
+    HttpClientPostExecutor(final ClassicHttpRequest httpPost, ScheduledExecutorService executor) {
       this.scheduledExecutorService = executor;
       this.httpPost = httpPost;
     }
 
     @Override
     public void run() {
-      try (final CloseableHttpClient httpclient = HttpClients.createDefault();
-           final CloseableHttpResponse response = httpclient.execute(httpPost)) {
+      try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
 
-        final HttpEntity entity = response.getEntity();
-        final String body = EntityUtils.toString(entity);
-        final int responseCode = response.getCode();
-        EntityUtils.consume(entity);
+        httpclient.execute(httpPost, response -> {
+          final int responseCode = response.getCode();
 
-        if (HttpStatus.SC_OK == responseCode) {
-          log.debug("Webhook {} return with HttpStatus 200.", config.getWebhookURI());
-          cancel();
-          return;
-        }
+          final HttpEntity entity = response.getEntity();
+          final String body = EntityUtils.toString(entity);
+          EntityUtils.consume(entity);
 
-        log.debug(body);
-        throw new IllegalStateException(String.format("Posting data to %s may have failed. Webhook responded with status code %s",
-            config.getWebhookURI(), responseCode));
+          if (HttpStatus.SC_OK == responseCode) {
+            log.debug("Webhook {} return with HttpStatus 200.", config.getWebhookURI());
+            cancel();
+            return responseCode;
+          }
+
+          log.debug(body);
+          throw new IllegalStateException(String.format("Posting data to %s may have failed. Webhook responded with status code %s",
+              config.getWebhookURI(), responseCode));
+        });
 
       } catch (Exception e) {
         log.warn(e.getMessage());
