@@ -7,6 +7,8 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpStatus;
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -287,13 +289,12 @@ class MessagePublisherImplTest {
       assertEquals(3, testee.getConfig().getRetries());
       assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
 
-      Thread.sleep(4000); // wait for executor service
-      client.verify(
-          mockedPost
-              .withContentType(MediaType.JSON_UTF_8)
-              .withBody(testMessage),
-          VerificationTimes.exactly(numberOf504Replies + 1)
-      );
+      Awaitility.await()
+          .atMost(Duration.FIVE_SECONDS /* wait for executor service */)
+          .untilAsserted(() ->
+              client.verify(mockedPost.withBody(testMessage)
+                      .withContentType(MediaType.JSON_UTF_8),
+                  VerificationTimes.exactly(numberOf504Replies + 1)));
       client.reset();
     }
 
