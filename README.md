@@ -15,7 +15,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 </dependency>
 ```
 
