@@ -1,6 +1,6 @@
 [![CI](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=baloise-incubator_ms-teams-connector&metric=alert_status)](https://sonarcloud.io/dashboard?id=baloise-incubator_ms-teams-connector)
-[![https://lift.sonatype.com/](https://lift.sonatype.com/api/badge/github.com/baloise-incubator/ms-teams-connector/)](https://lift.sonatype.com/api/badge/github.com/baloise-incubator/ms-teams-connector/)
+[![https://lift.sonatype.com/](https://lift.sonatype.com/api/badge/github.com/baloise-incubator/ms-teams-connector)](https://lift.sonatype.com/results/github.com/baloise-incubator/ms-teams-connector)
 
 
 # ms-teams-connector
@@ -10,7 +10,7 @@ and publish it to a MS-Teams channel via webhook.
 Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank"><b>Roland Seidel</b></a> for the idea and his reference implementation.
 
 ## Usage
-Add dependency to your project
+#### Add dependency to your project
 ```xml
 <dependency>
   <groupId>com.baloise.open</groupId>
@@ -19,7 +19,7 @@ Add dependency to your project
 </dependency>
 ```
 
-Create publisher per channel
+#### Create publisher per channel
 ```java
 final String uri = "https://teams.proxy.url/webhook/TEAM_ID/IncomingWebhook/CHANNEL_ID/WEBHOOK_ID";
 final MessagePublisher channelPublisher = MessagePublisher.getInstance(uri);
@@ -30,8 +30,30 @@ Now you can publish any message using MessagePublisher (e.g., create and publish
 final MessageCard msg = MessageCardFactory.createSimpleMessageCard("MyTitle", "MyMessage: Hello MFA-Team");
 ScheduledFuture<?> publishedFuture = channelPublisher.publish(msg);
 ```
-
 ![Example](docs/img/result_example.png)
+
+
+#### Using MessageCardFactory builder
+MessageCardFactory builder extends the "_SimpleMessageCard_" by adding colored horizontal ruler and facts.
+
+- Colors are either added by one of the predefined enums (
+<span style="color:#ff0000">RED</span>,
+<span style="color:#1aff00">GREEN</span>,
+<span style="color:#ffee00">YELLOW</span>,
+<span style="color:#0600ab">BLUE</span>) 
+or by adding any valid [color hex code](https://www.w3schools.com/colors/colors_picker.asp).
+
+- Facts are key-value pairs added as table below the text.
+
+```java
+MessageCardFactory.builder("A crisp title", "A little more descriptive text.")
+    .withColor(MessageCardFactory.Color.RED)
+    .withFact("Status", "Failure")
+    .withFact("Reason", "Out of memory")
+    .build();
+```
+
+
 
 ## Configuration
 

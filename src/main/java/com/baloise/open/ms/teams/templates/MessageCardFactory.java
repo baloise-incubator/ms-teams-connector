@@ -57,8 +57,12 @@ public final class MessageCardFactory {
   }
 
   public MessageCardFactory withColor(final Color color) {
-    if (color != null) {
-      instance.setThemeColor(color.hexCode);
+    return color != null ? withColor(color.hexCode) : this;
+  }
+
+  public MessageCardFactory withColor(final String color) {
+    if (StringUtils.isNotBlank(color)) {
+      instance.setThemeColor(color);
     }
     return this;
   }
