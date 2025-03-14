@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.junit.jupiter.MockServerExtension;
+import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
@@ -176,6 +177,7 @@ class MessagePublisherImplTest {
   @Nested
   @DisplayName("Test webhook MessagePublisher")
   @ExtendWith(MockServerExtension.class)
+  @MockServerSettings(ports = {8080})
   class MessagePublisherTest {
 
     private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
