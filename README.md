@@ -1,6 +1,5 @@
 [![CI](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/baloise-incubator/ms-teams-connector/actions/workflows/ci.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=baloise-incubator_ms-teams-connector&metric=alert_status)](https://sonarcloud.io/dashboard?id=baloise-incubator_ms-teams-connector)
-[![https://lift.sonatype.com/](https://lift.sonatype.com/api/badge/github.com/baloise-incubator/ms-teams-connector)](https://lift.sonatype.com/results/github.com/baloise-incubator/ms-teams-connector)
 
 
 # ms-teams-connector
@@ -8,6 +7,10 @@ Utilize a [MessageCard](https://docs.microsoft.com/en-us/microsoftteams/platform
 and publish it to a MS-Teams channel via webhook.
 
 Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank"><b>Roland Seidel</b></a> for the idea and his reference implementation.
+
+## Change Log
+- Version 0.2.x is the last version supporting Java 8
+
 
 ## Usage
 #### Add dependency to your project
