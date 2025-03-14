@@ -89,7 +89,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
     @Override
     public void run() {
-      try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
+      try (final CloseableHttpClient httpclient = HttpClients.createSystem()) {
 
         httpclient.execute(httpPost, response -> {
           final int responseCode = response.getCode();
