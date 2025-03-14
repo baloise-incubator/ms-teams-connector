@@ -9,7 +9,7 @@ and publish it to a MS-Teams channel via webhook.
 Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank"><b>Roland Seidel</b></a> for the idea and his reference implementation.
 
 ## Change Log
-- Version 0.2.x is the last version supporting Java 8
+- Version 0.2.3 is the last version supporting Java 8
 
 
 ## Usage
@@ -18,7 +18,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.2.2</version>
+  <version>0.2.3</version>
 </dependency>
 ```
 
