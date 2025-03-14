@@ -24,7 +24,7 @@
 
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.2.4-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>MS-TEAMS conenctor</name>
@@ -118,7 +118,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
-          <argLine>-Djava.net.useSystemProxies=true</argLine>
+          <argLine>${jacocoArgLine} -Djava.net.useSystemProxies=true</argLine>
           <reportsDirectory>${project.build.directory}/surefire</reportsDirectory>
             <environmentVariables>
               <https_proxy>http://localhost:8080</https_proxy>
