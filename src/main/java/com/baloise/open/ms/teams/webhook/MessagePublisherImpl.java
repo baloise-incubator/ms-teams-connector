@@ -19,13 +19,17 @@ import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.MessageCard;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.net.URI;
+import java.util.Optional;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
@@ -68,8 +72,10 @@ class MessagePublisherImpl implements MessagePublisher {
         .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
-    return executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(), TimeUnit.MILLISECONDS);
+    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost,
+        executor);
+    return executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(),
+        TimeUnit.MILLISECONDS);
   }
 
   Config getConfig() {
@@ -87,9 +93,17 @@ class MessagePublisherImpl implements MessagePublisher {
       this.httpPost = httpPost;
     }
 
+    @SneakyThrows
     @Override
     public void run() {
-      try (final CloseableHttpClient httpclient = HttpClients.createSystem()) {
+      try (final CloseableHttpClient httpclient = HttpClientBuilder.create()
+          .useSystemProperties()
+          .setProxy(Optional.ofNullable(System.getenv("https_proxy"))
+              .map(URI::create)
+              .map(HttpHost::create)
+              .orElse(null))
+          .build()
+      ) {
 
         httpclient.execute(httpPost, response -> {
           final int responseCode = response.getCode();
@@ -105,7 +119,8 @@ class MessagePublisherImpl implements MessagePublisher {
           }
 
           log.debug(body);
-          throw new IllegalStateException(String.format("Posting data to %s may have failed. Webhook responded with status code %s",
+          throw new IllegalStateException(String.format(
+              "Posting data to %s may have failed. Webhook responded with status code %s",
               config.getWebhookURI(), responseCode));
         });
 
