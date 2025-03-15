@@ -19,39 +19,39 @@ import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.MessageCard;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.net.URI;
-import java.util.Optional;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @Slf4j
 class MessagePublisherImpl implements MessagePublisher {
 
   private final Config config;
-  final ClassicHttpRequest httpPost;
+  final HttpPost httpPost;
 
   MessagePublisherImpl(final Map<String, Object> properties) {
     log.debug(properties.toString());
     config = new Config(properties);
-    httpPost = ClassicRequestBuilder.post(config.getWebhookURI()).build();
+    httpPost = new HttpPost(config.getWebhookURI());
   }
 
   @Override
@@ -65,16 +65,18 @@ class MessagePublisherImpl implements MessagePublisher {
     return scheduleMessagePublishing(jsonBody, httpPost);
   }
 
-  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, ClassicHttpRequest httpPost) {
+  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
     httpPost.setEntity(EntityBuilder.create()
         .setText(jsonBody)
         .setContentType(ContentType.APPLICATION_JSON)
         .setContentEncoding(StandardCharsets.UTF_8.name()).build());
 
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost,
-        executor);
-    return executor.scheduleWithFixedDelay(httpClientPostExec, 0, config.getPauseBetweenRetries(),
+    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
+    return executor.scheduleWithFixedDelay(
+        httpClientPostExec,
+        0 /* no delay */,
+        config.getPauseBetweenRetries(),
         TimeUnit.MILLISECONDS);
   }
 
@@ -82,29 +84,41 @@ class MessagePublisherImpl implements MessagePublisher {
     return config;
   }
 
+  /**
+   * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
+   * set as environment variable in operated system environment.
+   *
+   */
+  private HttpClientBuilder getHttpClientBuilder() {
+    final Optional<String> proxyEntry = Stream.of(
+            System.getenv("https_proxy"),
+            System.getenv("HTTPS_PROXY"))
+        .filter(StringUtils::isNotBlank).findFirst();
+
+    final HttpHost optionalProxy = proxyEntry
+        .map(URI::create)
+        .map(HttpHost::create)
+        .orElse(null);
+
+    return HttpClientBuilder.create()
+        .useSystemProperties()
+        .setProxy(optionalProxy);
+  }
+
   private final class HttpClientPostExecutor implements Runnable {
 
     final ScheduledExecutorService scheduledExecutorService;
-    final ClassicHttpRequest httpPost;
+    final HttpPost httpPost;
     final AtomicInteger execCounter = new AtomicInteger(0);
 
-    HttpClientPostExecutor(final ClassicHttpRequest httpPost, ScheduledExecutorService executor) {
+    HttpClientPostExecutor(final HttpPost httpPost, ScheduledExecutorService executor) {
       this.scheduledExecutorService = executor;
       this.httpPost = httpPost;
     }
 
-    @SneakyThrows
     @Override
     public void run() {
-      try (final CloseableHttpClient httpclient = HttpClientBuilder.create()
-          .useSystemProperties()
-          .setProxy(Optional.ofNullable(System.getenv("https_proxy"))
-              .map(URI::create)
-              .map(HttpHost::create)
-              .orElse(null))
-          .build()
-      ) {
-
+      try (final CloseableHttpClient httpclient = getHttpClientBuilder().build()) {
         httpclient.execute(httpPost, response -> {
           final int responseCode = response.getCode();
 
@@ -119,19 +133,19 @@ class MessagePublisherImpl implements MessagePublisher {
           }
 
           log.debug(body);
-          throw new IllegalStateException(String.format(
-              "Posting data to %s may have failed. Webhook responded with status code %s",
-              config.getWebhookURI(), responseCode));
+          throw new IllegalStateException(
+              "Posting data to %s may have failed. Webhook responded with status code %s"
+                  .formatted(config.getWebhookURI(), responseCode));
         });
 
       } catch (Exception e) {
         log.warn(e.getMessage());
 
         if (config.getRetries() == execCounter.incrementAndGet()) {
-          log.warn(String.format("Giving up after %d attempts.", config.getRetries()));
+          log.warn("Giving up after {} attempts.", config.getRetries());
           cancel();
         } else {
-          log.info(String.format("Retry in %d seconds", config.getPauseBetweenRetries() / 1000));
+          log.info("Retry in {} seconds", config.getPauseBetweenRetries() / 1000);
         }
       }
     }

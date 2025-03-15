@@ -18,7 +18,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.2.3</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
@@ -66,3 +66,5 @@ MessageCardFactory.builder("A crisp title", "A little more descriptive text.")
 |PROPERTY_RETRY_PAUSE|60|Defines the pause time between PROPERTY_RETRIES in seconds. Accepts any positive integer > 0.|
 |PROPERTY_WEBHOOK_URI|none|The URI to your webhook. Required property provided either as String or URI.|
 
+### System Environment
+In case you need to connect via a proxy URL, you can specify a system environment variable named ``https_proxy``. 

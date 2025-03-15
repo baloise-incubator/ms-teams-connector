@@ -14,12 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.junit.jupiter.MockServerExtension;
-import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
@@ -37,10 +38,12 @@ import java.util.concurrent.ScheduledFuture;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 
 class MessagePublisherImplTest {
 
@@ -177,7 +180,6 @@ class MessagePublisherImplTest {
   @Nested
   @DisplayName("Test webhook MessagePublisher")
   @ExtendWith(MockServerExtension.class)
-  @MockServerSettings(ports = {8080})
   class MessagePublisherTest {
 
     private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
@@ -251,6 +253,38 @@ class MessagePublisherImplTest {
       client.reset();
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"https_proxy","HTTPS_PROXY", "ANY_other_sys_env_but_not_proxy"})
+    void testHttpClientUsesProxyWhenSetLowerCase(String sysEnvParamName, MockServerClient client) throws Exception {
+      final String proxyUrl = getExtractedUri(client);
+      withEnvironmentVariable(sysEnvParamName, proxyUrl).execute(() -> {
+        final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+        client.when(mockedPost)
+            .respond(
+                HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+        final String enpointUrl = getExtractedUriButWrongPort(client);
+        final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(enpointUrl + "/MYENDPOINT");
+        ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+        assertNotNull(publishedFuture);
+        Awaitility.await()
+            .atMost(Durations.TWO_SECONDS /* wait for executor service */)
+            .untilAsserted(() ->
+                client.verify(mockedPost
+                        .withBody(testMessage)
+                        .withContentType(MediaType.JSON_UTF_8),
+                    VerificationTimes.exactly(
+                        "https_proxy".equalsIgnoreCase(sysEnvParamName)
+                            ? 1 /* call succeeded via proxy */
+                            : 0 /* call failed since wrong port */ )));
+
+        assertTrue(testee.getConfig().getRetries() > 1);
+        assertNotEquals(proxyUrl, enpointUrl);
+        client.reset();
+      });
+    }
+
     @Test
     @DisplayName("POST is executed 2 times during failure")
     void test2RetriesInCaseOfFailure(MockServerClient client) throws InterruptedException {
@@ -301,9 +335,15 @@ class MessagePublisherImplTest {
     }
 
     private String getExtractedUri(MockServerClient client) {
-      return String.format("http://%s:%d",
+      return "http://%s:%d".formatted(
           client.remoteAddress().getAddress().getHostAddress(),
           client.remoteAddress().getPort());
+    }
+
+    private String getExtractedUriButWrongPort(MockServerClient client) {
+      return "http://%s:%d".formatted(
+          client.remoteAddress().getAddress().getHostAddress(),
+          client.remoteAddress().getPort()-1);
     }
   }
 }

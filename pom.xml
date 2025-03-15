@@ -118,11 +118,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
-          <argLine>${jacocoArgLine} -Djava.net.useSystemProxies=true</argLine>
+          <argLine>${jacocoArgLine}</argLine>
           <reportsDirectory>${project.build.directory}/surefire</reportsDirectory>
-            <environmentVariables>
-              <https_proxy>http://localhost:8080</https_proxy>
-            </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -190,6 +187,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>5.11.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>5.16.0</version>
@@ -211,6 +214,12 @@
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>4.2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>uk.org.webcompere</groupId>
+      <artifactId>system-stubs-jupiter</artifactId>
+      <version>2.1.6</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
