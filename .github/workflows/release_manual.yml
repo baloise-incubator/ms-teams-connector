@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@main
         with:
           fetch-depth: 0 # Fetch all history for all tags and branches
-          tagsRefSpec: "+refs/tags/*:refs/tags/*" # Fetch all tags
+          fetch-tags: true
 
       - name: Configure git
         run: |

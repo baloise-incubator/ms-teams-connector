@@ -15,8 +15,10 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ public class Section {
   private String activityTitle;
   private String activitySubtitle;
   private String activityImage;
+  @Getter(AccessLevel.NONE)
   private final List<Fact> facts = new ArrayList<>();
   private Boolean markdown;
 
@@ -44,5 +47,9 @@ public class Section {
     }
 
     factProperties.forEach((name, value) -> addFact(new Fact(name, String.valueOf(value))));
+  }
+
+  public List<Fact> getFacts() {
+    return List.copyOf(facts);
   }
 }

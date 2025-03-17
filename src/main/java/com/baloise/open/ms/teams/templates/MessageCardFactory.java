@@ -21,7 +21,7 @@ import java.util.Map;
 
 public final class MessageCardFactory {
 
-  enum Color {
+  public enum Color {
     RED("#ff0000"),
     GREEN("#1aff00"),
     YELLOW("#ffee00"),
@@ -69,7 +69,7 @@ public final class MessageCardFactory {
 
   public MessageCardFactory withFact(final Fact fact) {
     if (fact != null) {
-      instance.getSections().get(0).getFacts().add(fact);
+      instance.getSections().get(0).addFact(fact);
     }
     return this;
   }
