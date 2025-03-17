@@ -15,6 +15,7 @@
  */
 package com.baloise.open.ms.teams.webhook;
 
+import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.MessageCard;
 
 import java.util.Collections;
@@ -25,22 +26,25 @@ import java.util.concurrent.ScheduledFuture;
 public interface MessagePublisher {
 
   /**
-   * defines the number of retires in case of technical interruptions
+   * use Config.PROPERTY_RETRIES instead
    */
-  String PROPERTY_RETRIES = "com.baloise.open.ms.teams.retries";
+  @Deprecated(forRemoval = true, since = "0.3.1")
+  String PROPERTY_RETRIES = Config.PROPERTY_RETRIES;
 
   /**
-   * defines the pause time between {@link #PROPERTY_RETRIES} in seconds
+   * use Config.PROPERTY_RETRY_PAUSE instead
    */
-  String PROPERTY_RETRY_PAUSE = "com.baloise.open.ms.teams.retries.pause";
+  @Deprecated(forRemoval = true, since = "0.3.1")
+  String PROPERTY_RETRY_PAUSE = Config.PROPERTY_RETRY_PAUSE;
 
   /**
-   * defines the webhooks URI
+   * use Config.PROPERTY_WEBHOOK_URI instead
    */
-  String PROPERTY_WEBHOOK_URI = "com.baloise.open.ms.teams.webhook.uri";
+  @Deprecated(forRemoval = true, since = "0.3.1")
+  String PROPERTY_WEBHOOK_URI = Config.PROPERTY_WEBHOOK_URI;
 
   static MessagePublisher getInstance(String uri) {
-    return getInstance(Collections.singletonMap(MessagePublisher.PROPERTY_WEBHOOK_URI, uri));
+    return getInstance(Collections.singletonMap(Config.PROPERTY_WEBHOOK_URI, uri));
   }
 
   static MessagePublisher getInstance(final Map<String, Object> customProperties) {
@@ -63,9 +67,9 @@ public interface MessagePublisher {
 
   static Map<String, Object> getDefaultProperties() {
     final HashMap<String, Object> properties = new HashMap<>();
-    properties.put(PROPERTY_RETRIES, 3);
-    properties.put(PROPERTY_RETRY_PAUSE, 60);
-    properties.put(PROPERTY_WEBHOOK_URI, null);
+    properties.put(Config.PROPERTY_RETRIES, 3);
+    properties.put(Config.PROPERTY_RETRY_PAUSE, 60);
+    properties.put(Config.PROPERTY_WEBHOOK_URI, null);
     return properties;
   }
 }

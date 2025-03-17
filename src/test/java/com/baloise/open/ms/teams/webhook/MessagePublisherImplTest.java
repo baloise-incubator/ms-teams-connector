@@ -63,21 +63,21 @@ class MessagePublisherImplTest {
     void testDefaultProperties() {
       assertEquals(3, defaultProperties.size());
       final Set<String> keys = defaultProperties.keySet();
-      assertTrue(keys.contains(MessagePublisher.PROPERTY_RETRIES));
-      assertEquals(3, defaultProperties.get(MessagePublisher.PROPERTY_RETRIES));
-      assertTrue(keys.contains(MessagePublisher.PROPERTY_RETRY_PAUSE));
-      assertEquals(60, defaultProperties.get(MessagePublisher.PROPERTY_RETRY_PAUSE));
-      assertTrue(keys.contains(MessagePublisher.PROPERTY_WEBHOOK_URI));
-      assertNull(defaultProperties.get(MessagePublisher.PROPERTY_WEBHOOK_URI));
+      assertTrue(keys.contains(Config.PROPERTY_RETRIES));
+      assertEquals(3, defaultProperties.get(Config.PROPERTY_RETRIES));
+      assertTrue(keys.contains(Config.PROPERTY_RETRY_PAUSE));
+      assertEquals(60, defaultProperties.get(Config.PROPERTY_RETRY_PAUSE));
+      assertTrue(keys.contains(Config.PROPERTY_WEBHOOK_URI));
+      assertNull(defaultProperties.get(Config.PROPERTY_WEBHOOK_URI));
     }
 
     @Test
     @DisplayName("Verify DefaultProperties overwritten by input")
     void testDefaultPropertiesOverwritten() {
       final Map<String, Object> properties = new HashMap<>();
-      properties.put(MessagePublisher.PROPERTY_RETRIES, 5);
-      properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 599);
-      properties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://my.uri.com");
+      properties.put(Config.PROPERTY_RETRIES, 5);
+      properties.put(Config.PROPERTY_RETRY_PAUSE, 599);
+      properties.put(Config.PROPERTY_WEBHOOK_URI, "https://my.uri.com");
 
       final MessagePublisherImpl instance = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
       final Config config = instance.getConfig();
@@ -94,7 +94,7 @@ class MessagePublisherImplTest {
 
     @BeforeEach
     void setUp() {
-      defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://test.uri.com");
+      defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, "https://test.uri.com");
     }
 
     @Test
@@ -108,23 +108,23 @@ class MessagePublisherImplTest {
       assertAll(
           () -> assertEquals(3, new Config(defaultProperties).getRetries()),
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 5);
+            defaultProperties.put(Config.PROPERTY_RETRIES, 5);
             assertEquals(5, new Config(defaultProperties).getRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, null);
+            defaultProperties.put(Config.PROPERTY_RETRIES, null);
             assertEquals(1, new Config(defaultProperties).getRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, 0);
+            defaultProperties.put(Config.PROPERTY_RETRIES, 0);
             assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, "aString");
+            defaultProperties.put(Config.PROPERTY_RETRIES, "aString");
             assertEquals(1, new Config(defaultProperties).getRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRIES, "22");
+            defaultProperties.put(Config.PROPERTY_RETRIES, "22");
             assertEquals(22, new Config(defaultProperties).getRetries());
           }
       );
@@ -135,23 +135,23 @@ class MessagePublisherImplTest {
       assertAll(
           () -> assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries()),
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 300);
+            defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, 300);
             assertEquals(300000, new Config(defaultProperties).getPauseBetweenRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, null);
+            defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, null);
             assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 0);
+            defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, 0);
             assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, "aString");
+            defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, "aString");
             assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, "22");
+            defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, "22");
             assertEquals(22000, new Config(defaultProperties).getPauseBetweenRetries());
           }
       );
@@ -162,15 +162,15 @@ class MessagePublisherImplTest {
       assertAll(
           () -> assertEquals(URI.create("https://test.uri.com"), new Config(defaultProperties).getWebhookURI()),
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://github.com");
+            defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, "https://github.com");
             assertEquals(URI.create("https://github.com"), new Config(defaultProperties).getWebhookURI());
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, null);
+            defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, null);
             assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
           },
           () -> {
-            defaultProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "everything but no URI");
+            defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, "everything but no URI");
             assertThrows(IllegalArgumentException.class, () -> new Config(defaultProperties));
           }
       );
@@ -186,9 +186,9 @@ class MessagePublisherImplTest {
 
     private Map<String, Object> getTestProperties() {
       final Map<String, Object> testProperties = MessagePublisher.getDefaultProperties();
-      testProperties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, "https://test.webhook.com/");
-      testProperties.put(MessagePublisher.PROPERTY_RETRIES, 1);
-      testProperties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1);
+      testProperties.put(Config.PROPERTY_WEBHOOK_URI, "https://test.webhook.com/");
+      testProperties.put(Config.PROPERTY_RETRIES, 1);
+      testProperties.put(Config.PROPERTY_RETRY_PAUSE, 1);
       return testProperties;
     }
 
@@ -315,8 +315,8 @@ class MessagePublisherImplTest {
 
       final Map<String, Object> properties = MessagePublisher.getDefaultProperties();
       final String expectedUri = getExtractedUri(client);
-      properties.put(MessagePublisher.PROPERTY_WEBHOOK_URI, expectedUri);
-      properties.put(MessagePublisher.PROPERTY_RETRY_PAUSE, 1); // speed up the test
+      properties.put(Config.PROPERTY_WEBHOOK_URI, expectedUri);
+      properties.put(Config.PROPERTY_RETRY_PAUSE, 1); // speed up the test
       final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
 
       ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
