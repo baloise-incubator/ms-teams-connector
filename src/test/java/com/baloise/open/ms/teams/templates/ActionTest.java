@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ActionTest extends PropertyReflectionTest {
 
-  final private Action testee = new Action("myName", "myTarget");
+  private final Action testee = new Action("myName", "myTarget");
 
   @Test
   void verifyNumberOfProperties() {

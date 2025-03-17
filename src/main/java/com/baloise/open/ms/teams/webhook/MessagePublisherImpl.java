@@ -84,27 +84,6 @@ class MessagePublisherImpl implements MessagePublisher {
     return config;
   }
 
-  /**
-   * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
-   * set as environment variable in operated system environment.
-   *
-   */
-  private HttpClientBuilder getHttpClientBuilder() {
-    final Optional<String> proxyEntry = Stream.of(
-            System.getenv("https_proxy"),
-            System.getenv("HTTPS_PROXY"))
-        .filter(StringUtils::isNotBlank).findFirst();
-
-    final HttpHost optionalProxy = proxyEntry
-        .map(URI::create)
-        .map(HttpHost::create)
-        .orElse(null);
-
-    return HttpClientBuilder.create()
-        .useSystemProperties()
-        .setProxy(optionalProxy);
-  }
-
   private final class HttpClientPostExecutor implements Runnable {
 
     final ScheduledExecutorService scheduledExecutorService;
@@ -148,6 +127,27 @@ class MessagePublisherImpl implements MessagePublisher {
           log.info("Retry in {} seconds", config.getPauseBetweenRetries() / 1000);
         }
       }
+    }
+
+    /**
+     * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
+     * set as environment variable in operated system environment.
+     *
+     */
+    private HttpClientBuilder getHttpClientBuilder() {
+      final Optional<String> proxyEntry = Stream.of(
+              System.getenv("https_proxy"),
+              System.getenv("HTTPS_PROXY"))
+          .filter(StringUtils::isNotBlank).findFirst();
+
+      final HttpHost optionalProxy = proxyEntry
+          .map(URI::create)
+          .map(HttpHost::create)
+          .orElse(null);
+
+      return HttpClientBuilder.create()
+          .useSystemProperties()
+          .setProxy(optionalProxy);
     }
 
     private void cancel() {

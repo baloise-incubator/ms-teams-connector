@@ -287,17 +287,17 @@ class MessagePublisherImplTest {
 
     @Test
     @DisplayName("POST is executed 2 times during failure")
-    void test2RetriesInCaseOfFailure(MockServerClient client) throws InterruptedException {
+    void test2RetriesInCaseOfFailure(MockServerClient client) {
       testRetrials(client, 1);
     }
 
     @Test
     @DisplayName("POST is executed 3 times during failure")
-    void test3RetriesInCaseOfFailure(MockServerClient client) throws InterruptedException {
+    void test3RetriesInCaseOfFailure(MockServerClient client) {
       testRetrials(client, 2);
     }
 
-    private void testRetrials(MockServerClient client, int numberOf504Replies) throws InterruptedException {
+    private void testRetrials(MockServerClient client, int numberOf504Replies) {
       ConfigurationProperties.maxSocketTimeout(5000);
       final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
       client.when(
