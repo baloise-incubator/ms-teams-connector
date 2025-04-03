@@ -16,7 +16,7 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
-import com.baloise.open.ms.teams.templates.MessageCard;
+import com.baloise.open.ms.teams.templates.AdaptiveCard;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
@@ -32,7 +32,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -45,114 +44,114 @@ import java.util.stream.Stream;
 @Slf4j
 class MessagePublisherImpl implements MessagePublisher {
 
-  private final Config config;
-  final HttpPost httpPost;
-
-  MessagePublisherImpl(final Map<String, Object> properties) {
-    log.debug(properties.toString());
-    config = new Config(properties);
-    httpPost = new HttpPost(config.getWebhookURI());
-  }
-
-  @Override
-  public ScheduledFuture<?> publish(final MessageCard messageCard) {
-    final Gson gson = new GsonBuilder().create();
-    return scheduleMessagePublishing(gson.toJson(messageCard), httpPost);
-  }
-
-  @Override
-  public ScheduledFuture<?> publish(String jsonBody) {
-    return scheduleMessagePublishing(jsonBody, httpPost);
-  }
-
-  ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
-    httpPost.setEntity(EntityBuilder.create()
-        .setText(jsonBody)
-        .setContentType(ContentType.APPLICATION_JSON)
-        .setContentEncoding(StandardCharsets.UTF_8.name()).build());
-
-    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
-    return executor.scheduleWithFixedDelay(
-        httpClientPostExec,
-        0 /* no delay */,
-        config.getPauseBetweenRetries(),
-        TimeUnit.MILLISECONDS);
-  }
-
-  Config getConfig() {
-    return config;
-  }
-
-  private final class HttpClientPostExecutor implements Runnable {
-
-    final ScheduledExecutorService scheduledExecutorService;
+    private final Config config;
     final HttpPost httpPost;
-    final AtomicInteger execCounter = new AtomicInteger(0);
 
-    HttpClientPostExecutor(final HttpPost httpPost, ScheduledExecutorService executor) {
-      this.scheduledExecutorService = executor;
-      this.httpPost = httpPost;
+    MessagePublisherImpl(final Map<String, Object> properties) {
+        log.debug(properties.toString());
+        config = new Config(properties);
+        httpPost = new HttpPost(config.getWebhookURI());
     }
 
     @Override
-    public void run() {
-      try (final CloseableHttpClient httpclient = getHttpClientBuilder().build()) {
-        httpclient.execute(httpPost, response -> {
-          final int responseCode = response.getCode();
+    public ScheduledFuture<?> publish(final AdaptiveCard adaptiveCard) {
+        final Gson gson = new GsonBuilder().create();
+        return scheduleMessagePublishing(gson.toJson(adaptiveCard), httpPost);
+    }
 
-          final HttpEntity entity = response.getEntity();
-          final String body = EntityUtils.toString(entity);
-          EntityUtils.consume(entity);
+    @Override
+    public ScheduledFuture<?> publish(String jsonBody) {
+        return scheduleMessagePublishing(jsonBody, httpPost);
+    }
 
-          if (HttpStatus.SC_OK == responseCode) {
-            log.debug("Webhook {} return with HttpStatus 200.", config.getWebhookURI());
-            cancel();
-            return responseCode;
-          }
+    ScheduledFuture<?> scheduleMessagePublishing(String jsonBody, HttpPost httpPost) {
+        httpPost.setEntity(EntityBuilder.create()
+                .setText(jsonBody)
+                .setContentType(ContentType.APPLICATION_JSON)
+                .build());
 
-          log.debug(body);
-          throw new IllegalStateException(
-              "Posting data to %s may have failed. Webhook responded with status code %s"
-                  .formatted(config.getWebhookURI(), responseCode));
-        });
+        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
+        return executor.scheduleWithFixedDelay(
+                httpClientPostExec,
+                0 /* no delay */,
+                config.getPauseBetweenRetries(),
+                TimeUnit.MILLISECONDS);
+    }
 
-      } catch (Exception e) {
-        log.warn(e.getMessage());
+    Config getConfig() {
+        return config;
+    }
 
-        if (config.getRetries() == execCounter.incrementAndGet()) {
-          log.warn("Giving up after {} attempts.", config.getRetries());
-          cancel();
-        } else {
-          log.info("Retry in {} seconds", config.getPauseBetweenRetries() / 1000);
+    private final class HttpClientPostExecutor implements Runnable {
+
+        final ScheduledExecutorService scheduledExecutorService;
+        final HttpPost httpPost;
+        final AtomicInteger execCounter = new AtomicInteger(0);
+
+        HttpClientPostExecutor(final HttpPost httpPost, ScheduledExecutorService executor) {
+            this.scheduledExecutorService = executor;
+            this.httpPost = httpPost;
         }
-      }
+
+        @Override
+        public void run() {
+            try (final CloseableHttpClient httpclient = getHttpClient()) {
+                httpclient.execute(httpPost, response -> {
+                    final int responseCode = response.getCode();
+
+                    final HttpEntity entity = response.getEntity();
+                    final String body = EntityUtils.toString(entity);
+                    EntityUtils.consume(entity);
+
+                    if (HttpStatus.SC_OK == responseCode || HttpStatus.SC_ACCEPTED == responseCode) {
+                        log.debug("Webhook {} return with HttpStatus 200.", config.getWebhookURI());
+                        cancel();
+                        return responseCode;
+                    }
+
+                    log.debug(body);
+                    throw new IllegalStateException(
+                            "Posting data to %s may have failed. Webhook responded with status code %s"
+                                    .formatted(config.getWebhookURI(), responseCode));
+                });
+
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+
+                if (config.getRetries() == execCounter.incrementAndGet()) {
+                    log.warn("Giving up after {} attempts.", config.getRetries());
+                    cancel();
+                } else {
+                    log.info("Retry in {} seconds", config.getPauseBetweenRetries() / 1000);
+                }
+            }
+        }
+
+        /**
+         * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
+         * set as environment variable in operated system environment.
+         */
+        private CloseableHttpClient getHttpClient() {
+            return Optional.ofNullable(config.getProxyURI())
+                    .or(() -> Stream.of(System.getenv("https_proxy"), System.getenv("HTTPS_PROXY"))
+                            .filter(StringUtils::isNotBlank)
+                            .findFirst()
+                            .map(URI::create)
+                    ).map(proxy -> {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Using proxy: {}", config.getProxyURI());
+                                }
+                                return HttpClients.custom()
+                                        .setProxy(new HttpHost(proxy.getHost(), proxy.getPort()))
+                                        .build();
+                            }
+                    ).orElseGet(HttpClients::createDefault);
+        }
+
+        private void cancel() {
+            log.debug("Shutdown scheduled executor service");
+            scheduledExecutorService.shutdown();
+        }
     }
-
-    /**
-     * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
-     * set as environment variable in operated system environment.
-     *
-     */
-    private HttpClientBuilder getHttpClientBuilder() {
-      final Optional<String> proxyEntry = Stream.of(
-              System.getenv("https_proxy"),
-              System.getenv("HTTPS_PROXY"))
-          .filter(StringUtils::isNotBlank).findFirst();
-
-      final HttpHost optionalProxy = proxyEntry
-          .map(URI::create)
-          .map(HttpHost::create)
-          .orElse(null);
-
-      return HttpClientBuilder.create()
-          .useSystemProperties()
-          .setProxy(optionalProxy);
-    }
-
-    private void cancel() {
-      log.debug("Shutdown scheduled executor service");
-      scheduledExecutorService.shutdown();
-    }
-  }
 }

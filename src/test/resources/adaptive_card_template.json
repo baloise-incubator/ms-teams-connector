@@ -1,0 +1,29 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "msteams": {
+    "width": "Full"
+  },
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Hello World",
+      "weight": "Bolder",
+      "style": "Heading"
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Fact 1",
+          "value": "Value 1"
+        },
+        {
+          "title": "Fact 2",
+          "value": "Value 2"
+        }
+      ]
+    }
+  ]
+}
