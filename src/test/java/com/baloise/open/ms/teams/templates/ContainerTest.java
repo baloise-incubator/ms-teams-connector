@@ -23,12 +23,12 @@ class ContainerTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(Container.class, 7);
+        this.assertNumberOfProperties(Container.class, 6);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(Container.TYPE, testee.getType());
+        assertEquals("Container", testee.getType());
         assertEquals("id", testee.getId());
         assertEquals(List.of(Badge.builder().build()), testee.getItems());
         assertEquals(List.of(FlowContainerLayout.builder().build()), testee.getLayouts());

@@ -19,12 +19,12 @@ class FactSetTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(FactSet.class, 3);
+        this.assertNumberOfProperties(FactSet.class, 2);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(FactSet.TYPE, testee.getType());
+        assertEquals("FactSet", testee.getType());
         assertEquals(List.of(Fact.builder()
                 .title("title")
                 .value("value")

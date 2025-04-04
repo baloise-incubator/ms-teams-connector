@@ -16,12 +16,12 @@ class CodeBlockTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(CodeBlock.class, 5);
+        this.assertNumberOfProperties(CodeBlock.class, 4);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(CodeBlock.TYPE, testee.getType());
+        assertEquals("CodeBlock", testee.getType());
         assertEquals("codeSnippet", testee.getCodeSnippet());
         assertEquals("language", testee.getLanguage());
         assertEquals(1, testee.getStartLineNumber());

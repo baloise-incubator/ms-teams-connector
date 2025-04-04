@@ -18,12 +18,12 @@ class BadgeTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(Badge.class, 7);
+        this.assertNumberOfProperties(Badge.class, 6);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(Badge.TYPE, testee.getType());
+        assertEquals(AdaptiveObject.Type.BADGE.getJsonValue(), testee.getType());
         assertEquals("text", testee.getText());
         assertEquals("tooltip", testee.getTooltip());
         assertEquals(Badge.BadgeShape.Square, testee.getShape());

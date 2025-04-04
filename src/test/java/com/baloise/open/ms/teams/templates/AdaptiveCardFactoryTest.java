@@ -39,10 +39,10 @@ class AdaptiveCardFactoryTest {
                 () -> assertNotNull(simpleAdaptiveCard.getTeamsCardProperties()),
                 () -> assertEquals(TeamsCardProperties.TeamCardWidth.Full, simpleAdaptiveCard.getTeamsCardProperties().getWidth()),
                 () -> assertEquals(title, titleBlock.getText()),
-                () -> assertEquals(TextBlock.TYPE, titleBlock.getType()),
+                () -> assertEquals(AdaptiveObject.Type.TEXT_BLOCK.getJsonValue(), titleBlock.getType()),
                 () -> assertEquals(TextBlock.TextWeight.Bolder, titleBlock.getWeight()),
                 () -> assertEquals(TextBlock.TextStyle.Heading, titleBlock.getStyle()),
-                () -> assertEquals(TextBlock.TYPE, messageBlock.getType()),
+                () -> assertEquals(AdaptiveObject.Type.TEXT_BLOCK.getJsonValue(), messageBlock.getType()),
                 () -> assertEquals(text, messageBlock.getText())
         );
     }
@@ -73,12 +73,12 @@ class AdaptiveCardFactoryTest {
                 () -> assertNotNull(simpleAdaptiveCard.getTeamsCardProperties()),
                 () -> assertEquals(TeamsCardProperties.TeamCardWidth.Full, simpleAdaptiveCard.getTeamsCardProperties().getWidth()),
                 () -> assertEquals(title, titleBlock.getText()),
-                () -> assertEquals(TextBlock.TYPE, titleBlock.getType()),
+                () -> assertEquals(AdaptiveObject.Type.TEXT_BLOCK.getJsonValue(), titleBlock.getType()),
                 () -> assertEquals(TextBlock.TextWeight.Bolder, titleBlock.getWeight()),
                 () -> assertEquals(TextBlock.TextStyle.Heading, titleBlock.getStyle()),
-                () -> assertEquals(TextBlock.TYPE, messageBlock.getType()),
+                () -> assertEquals(AdaptiveObject.Type.TEXT_BLOCK.getJsonValue(), messageBlock.getType()),
                 () -> assertEquals(text, messageBlock.getText()),
-                () -> assertEquals(FactSet.TYPE, factSet.getType()),
+                () -> assertEquals(AdaptiveObject.Type.FACT_SET.getJsonValue(), factSet.getType()),
                 () -> assertEquals(2, factSet.getFacts().size()),
                 () -> assertTrue(factSet.getFacts().containsAll(facts))
         );

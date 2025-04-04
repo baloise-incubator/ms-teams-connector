@@ -19,12 +19,12 @@ class TextBlockTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(TextBlock.class, 9);
+        this.assertNumberOfProperties(TextBlock.class, 8);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(TextBlock.TYPE, testee.getType());
+        assertEquals("TextBlock", testee.getType());
         assertEquals("text", testee.getText());
         assertEquals(TextBlock.TextStyle.ColumnHeader, testee.getStyle());
         assertEquals(TextBlock.TextColor.Warning, testee.getColor());

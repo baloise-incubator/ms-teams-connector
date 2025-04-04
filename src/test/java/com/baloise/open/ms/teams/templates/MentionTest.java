@@ -15,12 +15,12 @@ class MentionTest extends PropertyReflectionTest {
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(Mention.class, 4);
+        this.assertNumberOfProperties(Mention.class, 3);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals(Mention.TYPE, testee.getType());
+        assertEquals(AdaptiveObject.Type.MENTION.getJsonValue(), testee.getType());
         assertEquals(MentionedPerson.builder().id("id").name("name").build(), testee.getMentioned());
         assertEquals("text", testee.getText());
     }
@@ -28,7 +28,7 @@ class MentionTest extends PropertyReflectionTest {
     @Test
     void verifyFactory() {
         Mention mention = MentionFactory.createMention("id", "name lastname");
-        assertEquals(Mention.TYPE, mention.getType());
+        assertEquals("mention", mention.getType());
         assertEquals(MentionedPerson.builder().id("id").name("name lastname").build(), mention.getMentioned());
         assertEquals("<at>name_lastname</at>", mention.getText());
     }

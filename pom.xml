@@ -49,6 +49,7 @@
   <scm>
     <url>https://github.com/baloise-incubator/ms-teams-connector.git</url>
     <connection>scm:git:https://github.com/baloise-incubator/ms-teams-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/baloise-incubator/ms-teams-connector.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
