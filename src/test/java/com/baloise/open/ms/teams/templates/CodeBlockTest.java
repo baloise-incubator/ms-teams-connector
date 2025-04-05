@@ -1,7 +1,7 @@
 package com.baloise.open.ms.teams.templates;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
-import com.google.gson.GsonBuilder;
+import com.baloise.open.ms.teams.json.Serializer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +31,7 @@ class CodeBlockTest extends PropertyReflectionTest {
     void verifySerializaion() {
         assertEquals(
                 "{\"type\":\"CodeBlock\",\"language\":\"language\",\"codeSnippet\":\"codeSnippet\",\"startLineNumber\":1}",
-                new GsonBuilder().create().toJson(testee)
+                Serializer.asJson(testee)
         );
     }
 }

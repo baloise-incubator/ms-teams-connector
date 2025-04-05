@@ -15,10 +15,12 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -65,20 +67,41 @@ public class FlowContainerLayout extends ContainerLayout {
      */
     private String maxItemWidth;
 
-    public enum ItemFit {
-        Fit,
-        Fill
+    @Getter
+    public enum ItemFit implements JsonSerializableEnum {
+        FIT("Fit"),
+        FILL("Fill");
+
+        private final String jsonValue;
+
+        ItemFit(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum HorizontalItemsAlignment {
-        Left,
-        Center,
-        Right
+    @Getter
+    public enum HorizontalItemsAlignment implements JsonSerializableEnum {
+        LEFT("Left"),
+        CENTER("Center"),
+        RIGHT("Right");
+
+        private final String jsonValue;
+
+        HorizontalItemsAlignment(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum VerticalItemsAlignment {
-        Top,
-        Center,
-        Bottom
+    @Getter
+    public enum VerticalItemsAlignment implements JsonSerializableEnum {
+        TOP("Top"),
+        CENTER("Center"),
+        BOTTOM("Bottom");
+
+        private final String jsonValue;
+
+        VerticalItemsAlignment(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 }

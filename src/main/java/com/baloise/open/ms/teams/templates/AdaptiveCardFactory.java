@@ -35,8 +35,8 @@ public class AdaptiveCardFactory {
     public static AdaptiveCard createSimpleAdaptiveCard(final String title, final String message) {
         TextBlock titleBlock = TextBlock.builder()
                 .text(title)
-                .weight(TextBlock.TextWeight.Bolder)
-                .style(TextBlock.TextStyle.Heading)
+                .weight(TextBlock.TextWeight.BOLDER)
+                .style(TextBlock.TextStyle.HEADING)
                 .build();
         TextBlock messageBlock = TextBlock.builder()
                 .text(message)

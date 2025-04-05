@@ -1,6 +1,6 @@
 package com.baloise.open.ms.teams.templates;
 
-import com.google.gson.Gson;
+import com.baloise.open.ms.teams.json.Serializer;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -17,7 +18,7 @@ class AdaptiveCardTest {
     void verifyBasicTemplate() {
         // read expected json file from resource
         try (final InputStream resourceAsStream = ClassLoader.getSystemResourceAsStream("adaptive_card_template.json");
-             final InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
+             final InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(resourceAsStream));
              final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
 
             StringBuilder expected = new StringBuilder();
@@ -29,8 +30,8 @@ class AdaptiveCardTest {
                     .body(List.of(
                             TextBlock.builder()
                                     .text("Hello World")
-                                    .weight(TextBlock.TextWeight.Bolder)
-                                    .style(TextBlock.TextStyle.Heading)
+                                    .weight(TextBlock.TextWeight.BOLDER)
+                                    .style(TextBlock.TextStyle.HEADING)
                                     .build(),
                             FactSet.builder()
                                     .facts(List.of(
@@ -48,7 +49,7 @@ class AdaptiveCardTest {
                     .build();
 
             //compare the result
-            assertEquals(JsonParser.parseString(expected.toString()), new Gson().toJsonTree(adaptiveCard));
+            assertEquals(JsonParser.parseString(expected.toString()), Serializer.asJsonTree(adaptiveCard));
         } catch (Exception e) {
             fail("failed to read message_card_template for comparison: " + e.getMessage());
         }

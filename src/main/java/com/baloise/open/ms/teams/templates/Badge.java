@@ -15,9 +15,11 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -39,24 +41,45 @@ public class Badge extends AdaptiveObject {
     private BadgeAppearance appearance;
     private BadgeStyle style;
 
-    public enum BadgeShape {
-        Square,
-        Rounded,
-        Circular,
+    @Getter
+    public enum BadgeShape implements JsonSerializableEnum {
+        SQUARE("Square"),
+        ROUNDED("Rounded"),
+        CIRCULAR("Circular");
+
+        private final String jsonValue;
+
+        BadgeShape(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum BadgeAppearance {
-        Filled,
-        Tint
+    @Getter
+    public enum BadgeAppearance implements JsonSerializableEnum {
+        FILLED("Filled"),
+        TINT("Tint");
+
+        private final String jsonValue;
+
+        BadgeAppearance(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum BadgeStyle {
-        Default,
-        Subtle,
-        Informative,
-        Accent,
-        Good,
-        Attention,
-        Warning
+    @Getter
+    public enum BadgeStyle implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        SUBTLE("Subtle"),
+        INFORMATIVE("Informative"),
+        ACCENT("Accent"),
+        GOOD("Good"),
+        ATTENTION("Attention"),
+        WARNING("Warning");
+
+        private final String jsonValue;
+
+        BadgeStyle(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 }

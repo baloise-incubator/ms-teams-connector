@@ -13,26 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.json;
 
-import com.baloise.open.ms.teams.json.JsonSerializableEnum;
-import lombok.Getter;
-
-@Getter
-public enum Spacing implements JsonSerializableEnum {
-    NONE("None"),
-    DEFAULT("Default"),
-    EXTRA_SMALL("ExtraSmall"),
-    PREVIEW("Preview"),
-    SMALL("Small"),
-    MEDIUM("Medium"),
-    LARGE("Large"),
-    EXTRA_LARGE("ExtraLarge"),
-    PADDING("Padding");
-
-    private final String jsonValue;
-
-    Spacing(final String jsonValue) {
-        this.jsonValue = jsonValue;
-    }
+public interface JsonSerializableEnum {
+  String getJsonValue();
 }

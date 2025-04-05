@@ -15,9 +15,11 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -49,38 +51,73 @@ public class TextBlock extends AdaptiveObject{
     private TextFontType fontType;
     private TextColor color;
 
-    public enum TextStyle {
-        Default,
-        ColumnHeader,
-        Heading
+    @Getter
+    public enum TextStyle implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        COLUMN_HEADER("ColumnHeader"),
+        HEADING("Heading");
+
+        private final String jsonValue;
+
+        TextStyle(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum TextWeight {
-        Lighter,
-        Default,
-        Bolder
+    @Getter
+    public enum TextWeight implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        LIGHTER("Lighter"),
+        BOLDER("Bolder");
+
+        private final String jsonValue;
+
+        TextWeight(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum TextSize {
-        Small,
-        Default,
-        Medium,
-        Large,
-        ExtraLarge
+    @Getter
+    public enum TextSize implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        SMALL("Small"),
+        MEDIUM("Medium"),
+        LARGE("Large"),
+        EXTRA_LARGE("ExtraLarge");
+
+        private final String jsonValue;
+
+        TextSize(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum TextFontType {
-        Default,
-        Monospace
+    @Getter
+    public enum TextFontType implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        MONOSPACE("Monospace");
+        private final String jsonValue;
+
+
+        TextFontType(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 
-    public enum TextColor {
-        Default,
-        Dark,
-        Light,
-        Accent,
-        Good,
-        Warning,
-        Attention
+    @Getter
+    public enum TextColor implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        DARK("Dark"),
+        LIGHT("Light"),
+        ACCENT("Accent"),
+        GOOD("Good"),
+        WARNING("Warning"),
+        ATTENTION("Attention");
+
+        private final String jsonValue;
+
+        TextColor(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 }

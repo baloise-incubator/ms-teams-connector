@@ -15,6 +15,7 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public abstract class AdaptiveObject {
     private Spacing spacing;
 
     @Getter
-    public enum Type {
+    public enum Type implements JsonSerializableEnum {
         CODE_BLOCK("CodeBlock"),
         ADAPTIVE_CARD("AdaptiveCard"),
         BADGE("Badge"),

@@ -1,7 +1,7 @@
 package com.baloise.open.ms.teams.templates;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
-import com.google.gson.GsonBuilder;
+import com.baloise.open.ms.teams.json.Serializer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,13 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ContainerTest extends PropertyReflectionTest {
 
     private final Container testee = Container.builder()
-            .style(Container.ContainerStyle.Attention)
+            .style(Container.ContainerStyle.ATTENTION)
             .items(List.of(Badge.builder().build()))
             .layouts(List.of(FlowContainerLayout.builder().build()))
             .showBorder(true)
             .roundedCorners(true)
             .separator(true)
-            .spacing(Spacing.Large)
+            .spacing(Spacing.LARGE)
             .id("id")
             .build();
 
@@ -35,14 +35,14 @@ class ContainerTest extends PropertyReflectionTest {
         assertEquals(true, testee.getShowBorder());
         assertEquals(true, testee.getRoundedCorners());
         assertEquals(true, testee.getSeparator());
-        assertEquals(Spacing.Large, testee.getSpacing());
+        assertEquals(Spacing.LARGE, testee.getSpacing());
     }
 
     @Test
     void verifySerializaion() {
         assertEquals(
                 "{\"type\":\"Container\",\"items\":[{\"type\":\"Badge\"}],\"layouts\":[{\"type\":\"Layout.Flow\"}],\"style\":\"Attention\",\"roundedCorners\":true,\"showBorder\":true,\"id\":\"id\",\"separator\":true,\"spacing\":\"Large\"}",
-                new GsonBuilder().create().toJson(testee)
+                Serializer.asJson(testee)
         );
     }
 }

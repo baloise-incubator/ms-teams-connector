@@ -1,7 +1,7 @@
 package com.baloise.open.ms.teams.templates;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
-import com.google.gson.GsonBuilder;
+import com.baloise.open.ms.teams.json.Serializer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,15 +18,15 @@ class TeamsCardPropertiesTest extends PropertyReflectionTest {
 
     @Test
     void verifyDefaults() {
-        assertEquals(TeamsCardProperties.TeamCardWidth.Full, testee.getWidth());
+        assertEquals("full", testee.getWidth());
         assertNull(testee.getEntities());
     }
 
     @Test
     void verifySerializaion() {
         assertEquals(
-                "{\"width\":\"Full\"}",
-                new GsonBuilder().create().toJson(testee)
+                "{\"width\":\"full\"}",
+                Serializer.asJson(testee)
         );
     }
 }

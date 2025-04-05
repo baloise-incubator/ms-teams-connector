@@ -1,7 +1,7 @@
 package com.baloise.open.ms.teams.templates;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
-import com.google.gson.GsonBuilder;
+import com.baloise.open.ms.teams.json.Serializer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +28,7 @@ class FactTest extends PropertyReflectionTest {
     void verifySerializaion() {
         assertEquals(
                 "{\"title\":\"title\",\"value\":\"value\"}",
-                new GsonBuilder().create().toJson(testee)
+                Serializer.asJson(testee)
         );
     }
 }

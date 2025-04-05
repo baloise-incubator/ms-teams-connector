@@ -3,7 +3,7 @@
   "version": "1.5",
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "msteams": {
-    "width": "Full"
+    "width": "full"
   },
   "body": [
     {

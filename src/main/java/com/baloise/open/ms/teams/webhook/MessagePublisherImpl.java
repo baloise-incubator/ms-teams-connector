@@ -16,9 +16,8 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.json.Serializer;
 import com.baloise.open.ms.teams.templates.AdaptiveCard;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -55,8 +54,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
     @Override
     public ScheduledFuture<?> publish(final AdaptiveCard adaptiveCard) {
-        final Gson gson = new GsonBuilder().create();
-        return scheduleMessagePublishing(gson.toJson(adaptiveCard), httpPost);
+        return scheduleMessagePublishing(Serializer.asJson(adaptiveCard), httpPost);
     }
 
     @Override

@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.json;
 
-import com.baloise.open.ms.teams.json.JsonSerializableEnum;
-import lombok.Getter;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
-@Getter
-public enum Spacing implements JsonSerializableEnum {
-    NONE("None"),
-    DEFAULT("Default"),
-    EXTRA_SMALL("ExtraSmall"),
-    PREVIEW("Preview"),
-    SMALL("Small"),
-    MEDIUM("Medium"),
-    LARGE("Large"),
-    EXTRA_LARGE("ExtraLarge"),
-    PADDING("Padding");
+import java.lang.reflect.Type;
 
-    private final String jsonValue;
+public class EnumSerializer implements JsonSerializer<JsonSerializableEnum> {
 
-    Spacing(final String jsonValue) {
-        this.jsonValue = jsonValue;
-    }
+  @Override
+  public JsonElement serialize(final JsonSerializableEnum src, final Type typeOfSrc, final JsonSerializationContext context) {
+    return new JsonPrimitive(src.getJsonValue());
+  }
 }

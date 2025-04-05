@@ -15,9 +15,11 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -32,7 +34,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Container extends AdaptiveObject{
+public class Container extends AdaptiveObject {
 
     private final String type = Type.CONTAINER.getJsonValue();
     private List<AdaptiveObject> items;
@@ -41,12 +43,19 @@ public class Container extends AdaptiveObject{
     private Boolean roundedCorners;
     private Boolean showBorder;
 
-    public enum ContainerStyle {
-        Default,
-        Emphasis,
-        Accent,
-        Good,
-        Attention,
-        Warning
+    @Getter
+    public enum ContainerStyle implements JsonSerializableEnum {
+        DEFAULT("Default"),
+        EMPHASIS("Emphasis"),
+        ACCENT("Accent"),
+        GOOD("Good"),
+        ATTENTION("Attention"),
+        WARNING("Warning");
+
+        private final String jsonValue;
+
+        ContainerStyle(final String jsonValue) {
+            this.jsonValue = jsonValue;
+        }
     }
 }

@@ -1,9 +1,9 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
+import com.baloise.open.ms.teams.json.Serializer;
 import com.baloise.open.ms.teams.templates.AdaptiveCard;
 import com.baloise.open.ms.teams.templates.Badge;
-import com.google.gson.GsonBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -253,7 +253,7 @@ class MessagePublisherImplTest {
             final HttpRequest mockedPost = HttpRequest.request()
                     .withMethod("POST")
                     .withContentType(MediaType.JSON_UTF_8)
-                    .withBody(new GsonBuilder().create().toJson(adaptiveCard));
+                    .withBody(Serializer.asJson(adaptiveCard));
 
             client.verify(mockedPost, VerificationTimes.exactly(1));
             assertTrue(testee.getConfig().getRetries() > 1);
