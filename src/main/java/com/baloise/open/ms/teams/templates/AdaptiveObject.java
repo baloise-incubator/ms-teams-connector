@@ -25,6 +25,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @RequiredArgsConstructor
 public abstract class AdaptiveObject {
+
+    static final String JSON_VALUE_DEFAULT = "Default";
+
     private String id;
     private Boolean separator;
     private Spacing spacing;

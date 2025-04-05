@@ -18,10 +18,12 @@ package com.baloise.open.ms.teams.templates;
 import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.Getter;
 
+import static com.baloise.open.ms.teams.templates.AdaptiveObject.JSON_VALUE_DEFAULT;
+
 @Getter
 public enum Spacing implements JsonSerializableEnum {
     NONE("None"),
-    DEFAULT("Default"),
+    DEFAULT(JSON_VALUE_DEFAULT),
     EXTRA_SMALL("ExtraSmall"),
     PREVIEW("Preview"),
     SMALL("Small"),

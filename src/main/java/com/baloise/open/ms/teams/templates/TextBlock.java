@@ -53,7 +53,7 @@ public class TextBlock extends AdaptiveObject{
 
     @Getter
     public enum TextStyle implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         COLUMN_HEADER("ColumnHeader"),
         HEADING("Heading");
 
@@ -66,7 +66,7 @@ public class TextBlock extends AdaptiveObject{
 
     @Getter
     public enum TextWeight implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         LIGHTER("Lighter"),
         BOLDER("Bolder");
 
@@ -79,7 +79,7 @@ public class TextBlock extends AdaptiveObject{
 
     @Getter
     public enum TextSize implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         SMALL("Small"),
         MEDIUM("Medium"),
         LARGE("Large"),
@@ -94,7 +94,7 @@ public class TextBlock extends AdaptiveObject{
 
     @Getter
     public enum TextFontType implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         MONOSPACE("Monospace");
         private final String jsonValue;
 
@@ -106,7 +106,7 @@ public class TextBlock extends AdaptiveObject{
 
     @Getter
     public enum TextColor implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         DARK("Dark"),
         LIGHT("Light"),
         ACCENT("Accent"),

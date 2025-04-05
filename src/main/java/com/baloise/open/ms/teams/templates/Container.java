@@ -45,7 +45,7 @@ public class Container extends AdaptiveObject {
 
     @Getter
     public enum ContainerStyle implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         EMPHASIS("Emphasis"),
         ACCENT("Accent"),
         GOOD("Good"),

@@ -68,7 +68,7 @@ public class Badge extends AdaptiveObject {
 
     @Getter
     public enum BadgeStyle implements JsonSerializableEnum {
-        DEFAULT("Default"),
+        DEFAULT(JSON_VALUE_DEFAULT),
         SUBTLE("Subtle"),
         INFORMATIVE("Informative"),
         ACCENT("Accent"),

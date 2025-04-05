@@ -18,6 +18,11 @@ package com.baloise.open.ms.teams.templates;
 import org.apache.commons.lang3.StringUtils;
 
 public class MentionFactory {
+
+    private MentionFactory() {
+        // static usage only
+    }
+
     public static Mention createMention(String id, String name) {
         if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("id must not be null or empty");
@@ -26,10 +31,10 @@ public class MentionFactory {
             throw new IllegalArgumentException("name must not be null or empty");
         }
 
-        String nameSnakeCase = name.trim().replace(StringUtils.SPACE, "_").toLowerCase();
+        final String nameSnakeCase = name.trim().replace(StringUtils.SPACE, "_").toLowerCase();
 
         return Mention.builder()
-                .text(String.format("<at>%s</at>", nameSnakeCase))
+                .text("<at>%s</at>".formatted(nameSnakeCase))
                 .mentioned(MentionedPerson.builder()
                         .id(id)
                         .name(name)
