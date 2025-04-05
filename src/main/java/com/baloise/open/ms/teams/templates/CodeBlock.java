@@ -16,20 +16,23 @@
 package com.baloise.open.ms.teams.templates;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
- * <p>A fact in a FactSet element.</p> *
- * <a href="https://adaptivecards.microsoft.com/?topic=Fact" target="_blank">Fact reference</a>
+ * <p>A formatted and syntax-colored code block.</p> *
+ * <a href="https://adaptivecards.microsoft.com/?topic=CodeBlock" target="_blank">CodeBlock reference</a>
  */
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Fact {
-    private String title;
-    private String value;
+@EqualsAndHashCode(callSuper = true)
+public class CodeBlock extends AdaptiveObject {
+    private final String type = Type.CODE_BLOCK.getJsonValue();
+    private String language;
+    private String codeSnippet;
+    private Integer startLineNumber;
 }
-

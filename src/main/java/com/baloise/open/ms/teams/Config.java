@@ -17,6 +17,7 @@ package com.baloise.open.ms.teams;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -41,14 +42,21 @@ public final class Config {
    */
   public static final String PROPERTY_WEBHOOK_URI = "com.baloise.open.ms.teams.webhook.uri";
 
+  /**
+   * defines the proxy URI
+   */
+  public static final String PROPERTY_PROXY_URI = "com.baloise.open.ms.teams.proxy.uri";
+
   private final int retries;
   private final long pauseBetweenRetries;
   private final URI webhookURI;
+  private final URI proxyURI;
 
   public Config(final Map<String, Object> properties) {
     retries = setRetries(properties);
     pauseBetweenRetries = setPauseBetweenRetries(properties);
     webhookURI = setWebhookURI(properties);
+    proxyURI = setProxyURI(properties);
   }
 
   private URI setWebhookURI(Map<String, Object> properties) {
@@ -68,6 +76,23 @@ public final class Config {
           stringValue,
           e.getMessage()));
     }
+  }
+
+  private URI setProxyURI(Map<String, Object> properties) {
+    final Object propertyObject = properties.get(PROPERTY_PROXY_URI);
+    final String stringValue = String.valueOf(propertyObject);
+
+    if (ObjectUtils.isNotEmpty(propertyObject) && StringUtils.isNotBlank(stringValue)) {
+      try {
+        return URI.create(stringValue);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(String.format("Parameter %s must be a valid URI (%s): %s",
+                PROPERTY_PROXY_URI,
+                stringValue,
+                e.getMessage()));
+      }
+    }
+    return null;
   }
 
   private long setPauseBetweenRetries(Map<String, Object> properties) {

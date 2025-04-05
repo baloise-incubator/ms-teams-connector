@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Baloise Group
+ * Copyright 2025 Baloise Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.json;
 
-import lombok.Getter;
-
-@Getter
-public abstract class Input {
-
-  protected Input(String id, String title) {
-    this.id = id;
-    this.title = title;
-  }
-
-  final String id;
-  final String title;
+public interface JsonSerializableEnum {
+  String getJsonValue();
 }
