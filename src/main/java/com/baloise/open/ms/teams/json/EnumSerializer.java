@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Baloise Group
+ * Copyright 2025 Baloise Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.json;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Getter;
-import lombok.Setter;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
-@Getter
-@Setter
-public class TextInput extends Input{
+import java.lang.reflect.Type;
 
-  public TextInput(String id, String title) {
-    super(id, title);
+public class EnumSerializer implements JsonSerializer<JsonSerializableEnum> {
+
+  @Override
+  public JsonElement serialize(final JsonSerializableEnum src, final Type typeOfSrc, final JsonSerializationContext context) {
+    return new JsonPrimitive(src.getJsonValue());
   }
-
-  public TextInput(String id, String title, boolean isMultiline) {
-    super(id, title);
-    this.isMultiline = isMultiline;
-  }
-
-  @SerializedName(value = "@type")
-  private final String type = "TextInput";
-
-  private boolean isMultiline;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Baloise Group
+ * Copyright 2025 Baloise Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,26 @@
  */
 package com.baloise.open.ms.teams.templates;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Data;
+import com.baloise.open.ms.teams.json.JsonSerializableEnum;
+import lombok.Getter;
 
-@Data
-public class Action {
+import static com.baloise.open.ms.teams.templates.AdaptiveObject.JSON_VALUE_DEFAULT;
 
-  @SerializedName(value = "@type")
-  private final String type = "HttpPOST";
+@Getter
+public enum Spacing implements JsonSerializableEnum {
+    NONE("None"),
+    DEFAULT(JSON_VALUE_DEFAULT),
+    EXTRA_SMALL("ExtraSmall"),
+    PREVIEW("Preview"),
+    SMALL("Small"),
+    MEDIUM("Medium"),
+    LARGE("Large"),
+    EXTRA_LARGE("ExtraLarge"),
+    PADDING("Padding");
 
-  private final String name;
-  private final String target;
+    private final String jsonValue;
 
+    Spacing(final String jsonValue) {
+        this.jsonValue = jsonValue;
+    }
 }

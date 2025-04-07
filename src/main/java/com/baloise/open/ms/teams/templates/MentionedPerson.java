@@ -21,15 +21,22 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * <p>A fact in a FactSet element.</p> *
- * <a href="https://adaptivecards.microsoft.com/?topic=Fact" target="_blank">Fact reference</a>
+ * <p>Represents a mentioned person.</p>
+ * <a href="https://adaptivecards.microsoft.com/?topic=MentionedPersion" target="_blank">MentionedPersion reference</a>
  */
 @Data
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Fact {
-    private String title;
-    private String value;
+public class MentionedPerson {
+    /**
+     * <p>The Id of a mentioned person entity, typically a Microsoft Entra user Id.</p>
+     *
+     * <p>For a person this is normally their email address.</p>
+     */
+    private String id;
+    /**
+     * The name of the mentioned person.
+     */
+    private String name;
 }
-
