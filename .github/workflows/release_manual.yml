@@ -32,7 +32,7 @@ jobs:
         run: mvn -B release:prepare
         env:
           GITHUB_USERNAME: x-access-token
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_MAVEN_RELEASE }}
 
       - name: Read recent created tag
         run: |
