@@ -27,7 +27,7 @@
   <version>0.4.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>MS-TEAMS conenctor</name>
+  <name>MS-TEAMS Connector</name>
   <description>Use this Connector to programmatically create a MessageCard and publish it to a Teams channel via
     webhook.
   </description>
@@ -73,6 +73,8 @@
     <sonar.java.codeCoveragePlugin>jacoco</sonar.java.codeCoveragePlugin>
     <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
+    <junit-jupiter.version>5.13.0</junit-jupiter.version>
+    <mockito-core.version>5.18.0</mockito-core.version>
   </properties>
 
   <build>
@@ -184,25 +186,25 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.13.0</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.13.0</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.18.0</version>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>5.18.0</version>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
