@@ -31,7 +31,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,10 +45,12 @@ class MessagePublisherImpl implements MessagePublisher {
     private final Config config;
     final HttpPost httpPost;
 
-    MessagePublisherImpl(final Map<String, Object> properties) {
-        log.debug(properties.toString());
-        config = new Config(properties);
-        httpPost = new HttpPost(config.getWebhookURI());
+    MessagePublisherImpl(final Config config) {
+        if (log.isDebugEnabled()) {
+            log.debug("Creating MessagePublisherImpl with config: {}", config);
+        }
+        this.config = config;
+        httpPost = new HttpPost(this.config.getWebhookURI());
     }
 
     @Override
@@ -70,11 +71,26 @@ class MessagePublisherImpl implements MessagePublisher {
 
         final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         final HttpClientPostExecutor httpClientPostExec = new HttpClientPostExecutor(httpPost, executor);
-        return executor.scheduleWithFixedDelay(
+        ScheduledFuture<?> scheduledFuture = executor.scheduleWithFixedDelay(
                 httpClientPostExec,
                 0 /* no delay */,
                 config.getPauseBetweenRetries(),
                 TimeUnit.MILLISECONDS);
+        if (config.isBlocking()) {
+            log.debug("Blocking mode is enabled, waiting for the webhook to return a response.");
+            try {
+                long terminationTimeout = (config.getRetries() + 1) * config.getPauseBetweenRetries();
+                if (!executor.awaitTermination(terminationTimeout, TimeUnit.SECONDS)) {
+                    log.warn("Webhook did not return a response within the timeout period.");
+                }
+            } catch (InterruptedException e) {
+                log.error("InterruptedException: ", e);
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            log.debug("Non-blocking mode is enabled, scheduling retries until the webhook returns a response.");
+        }
+        return scheduledFuture;
     }
 
     Config getConfig() {
@@ -138,7 +154,7 @@ class MessagePublisherImpl implements MessagePublisher {
                             .map(URI::create)
                     ).map(proxy -> {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Using proxy: {}", config.getProxyURI());
+                                    log.debug("Using proxy: {}", proxy);
                                 }
                                 return HttpClients.custom()
                                         .setProxy(new HttpHost(proxy.getHost(), proxy.getPort()))

@@ -17,9 +17,7 @@ package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.templates.AdaptiveCard;
-import org.apache.commons.lang3.ObjectUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
@@ -44,26 +42,23 @@ public interface MessagePublisher {
     String PROPERTY_WEBHOOK_URI = Config.PROPERTY_WEBHOOK_URI;
 
     static MessagePublisher getInstance(String uri) {
-        return getInstance(Map.of(Config.PROPERTY_WEBHOOK_URI, uri));
+        return getInstance(Config.builder().withWebhookURI(uri).build());
     }
 
     static MessagePublisher getInstance(String proxyUri, String uri) {
-        return getInstance(Map.of(
-                Config.PROPERTY_PROXY_URI, proxyUri,
-                Config.PROPERTY_WEBHOOK_URI, uri
-        ));
+        return getInstance(Config.builder()
+                .withWebhookURI(uri)
+                .withProxyURI(proxyUri)
+                .build());
     }
 
     static MessagePublisher getInstance(final Map<String, Object> customProperties) {
-        final Map<String, Object> defaultProperties = getDefaultProperties();
-        if (customProperties != null) {
-            customProperties.forEach((key, value) -> {
-                if (ObjectUtils.isNotEmpty(value)) {
-                    defaultProperties.merge(key, value, (k1, v1) -> value);
-                }
-            });
-        }
-        return new MessagePublisherImpl(defaultProperties);
+        final Config config = new Config(customProperties);
+        return new MessagePublisherImpl(config);
+    }
+
+    static MessagePublisher getInstance(final Config config) {
+        return new MessagePublisherImpl(config);
     }
 
     /**
@@ -75,13 +70,4 @@ public interface MessagePublisher {
      * transmits provided jsonfied String to configured webhook
      */
     ScheduledFuture<?> publish(String jsonBody);
-
-    static Map<String, Object> getDefaultProperties() {
-        final HashMap<String, Object> properties = new HashMap<>();
-        properties.put(Config.PROPERTY_RETRIES, 3);
-        properties.put(Config.PROPERTY_RETRY_PAUSE, 60);
-        properties.put(Config.PROPERTY_WEBHOOK_URI, null);
-        properties.put(Config.PROPERTY_PROXY_URI, null);
-        return properties;
-    }
 }
