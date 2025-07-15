@@ -34,11 +34,11 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,10 +49,12 @@ import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 class MessagePublisherImplTest {
 
     private Map<String, Object> defaultProperties;
+    private final String webhookURI = "https://my.uri.com";
 
     @BeforeEach
     void setUp() {
-        defaultProperties = MessagePublisher.getDefaultProperties();
+        defaultProperties = new HashMap<>();
+        defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, webhookURI);
     }
 
     @Nested
@@ -61,16 +63,27 @@ class MessagePublisherImplTest {
         @Test
         @DisplayName("Verfiy DefaultProperties to be complete")
         void testDefaultProperties() {
-            assertEquals(4, defaultProperties.size());
-            final Set<String> keys = defaultProperties.keySet();
-            assertTrue(keys.contains(Config.PROPERTY_RETRIES));
-            assertEquals(3, defaultProperties.get(Config.PROPERTY_RETRIES));
-            assertTrue(keys.contains(Config.PROPERTY_RETRY_PAUSE));
-            assertEquals(60, defaultProperties.get(Config.PROPERTY_RETRY_PAUSE));
-            assertTrue(keys.contains(Config.PROPERTY_WEBHOOK_URI));
-            assertNull(defaultProperties.get(Config.PROPERTY_WEBHOOK_URI));
-            assertTrue(keys.contains(Config.PROPERTY_PROXY_URI));
-            assertNull(defaultProperties.get(Config.PROPERTY_PROXY_URI));
+            Config config = new Config(defaultProperties);
+
+            assertEquals(Config.DEFAULT_RETRIES, config.getRetries());
+            assertEquals(Config.DEFAULT_PAUSE_BETWEEN_RETRIES, config.getPauseBetweenRetries());
+            assertEquals(webhookURI, config.getWebhookURI().toString());
+            assertNull(config.getProxyURI());
+            assertFalse(config.isBlocking());
+        }
+
+        @Test
+        @DisplayName("Verfiy DefaultProperties to be complete")
+        void testDefaultBuilder() {
+            Config config = Config.builder()
+                    .withWebhookURI(webhookURI)
+                    .build();
+
+            assertEquals(Config.DEFAULT_RETRIES, config.getRetries());
+            assertEquals(Config.DEFAULT_PAUSE_BETWEEN_RETRIES, config.getPauseBetweenRetries());
+            assertEquals(webhookURI, config.getWebhookURI().toString());
+            assertNull(config.getProxyURI());
+            assertFalse(config.isBlocking());
         }
 
         @Test
@@ -81,14 +94,18 @@ class MessagePublisherImplTest {
             properties.put(Config.PROPERTY_RETRY_PAUSE, 599);
             properties.put(Config.PROPERTY_WEBHOOK_URI, "https://my.uri.com");
             properties.put(Config.PROPERTY_PROXY_URI, "https://proxy.uri.com");
+            properties.put(Config.PROPERTY_BLOCKING, Boolean.TRUE);
 
             final MessagePublisherImpl instance = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
             final Config config = instance.getConfig();
 
             assertEquals(5, config.getRetries());
             assertEquals(599000, config.getPauseBetweenRetries());
+            assertNotNull(config.getWebhookURI());
             assertEquals("https://my.uri.com", config.getWebhookURI().toString());
+            assertNotNull(config.getProxyURI());
             assertEquals("https://proxy.uri.com", config.getProxyURI().toString());
+            assertTrue(config.isBlocking());
         }
     }
 
@@ -106,19 +123,22 @@ class MessagePublisherImplTest {
         @DisplayName("IllegalArgumentException when null is initialized")
         void testExceptionOnNull() {
             assertThrows(IllegalArgumentException.class, () -> new Config(null));
+            Config.Builder builder = Config.builder();
+            assertThrows(IllegalArgumentException.class, builder::build);
         }
 
         @Test
         void retries() {
             assertAll(
-                    () -> assertEquals(3, new Config(defaultProperties).getRetries()),
+                    () -> assertEquals(Config.DEFAULT_RETRIES, new Config(defaultProperties).getRetries()),
+                    () -> assertEquals(Config.DEFAULT_RETRIES, Config.builder().withWebhookURI(webhookURI).build().getRetries()),
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRIES, 5);
                         assertEquals(5, new Config(defaultProperties).getRetries());
                     },
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRIES, null);
-                        assertEquals(1, new Config(defaultProperties).getRetries());
+                        assertEquals(Config.DEFAULT_RETRIES, new Config(defaultProperties).getRetries());
                     },
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRIES, 0);
@@ -126,7 +146,7 @@ class MessagePublisherImplTest {
                     },
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRIES, "aString");
-                        assertEquals(1, new Config(defaultProperties).getRetries());
+                        assertEquals(Config.DEFAULT_RETRIES, new Config(defaultProperties).getRetries());
                     },
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRIES, "22");
@@ -139,6 +159,7 @@ class MessagePublisherImplTest {
         void pauseBetweenRetries() {
             assertAll(
                     () -> assertEquals(60000, new Config(defaultProperties).getPauseBetweenRetries()),
+                    () -> assertEquals(60000, Config.builder().withWebhookURI(webhookURI).build().getPauseBetweenRetries()),
                     () -> {
                         defaultProperties.put(Config.PROPERTY_RETRY_PAUSE, 300);
                         assertEquals(300000, new Config(defaultProperties).getPauseBetweenRetries());
@@ -166,6 +187,7 @@ class MessagePublisherImplTest {
         void webhookURI() {
             assertAll(
                     () -> assertEquals(URI.create("https://test.uri.com"), new Config(defaultProperties).getWebhookURI()),
+                    () -> assertEquals(URI.create(webhookURI), Config.builder().withWebhookURI(webhookURI).build().getWebhookURI()),
                     () -> {
                         defaultProperties.put(Config.PROPERTY_WEBHOOK_URI, "https://github.com");
                         assertEquals(URI.create("https://github.com"), new Config(defaultProperties).getWebhookURI());
@@ -185,6 +207,7 @@ class MessagePublisherImplTest {
         void proxyURI() {
             assertAll(
                     () -> assertEquals(URI.create("https://proxy.uri.com"), new Config(defaultProperties).getProxyURI()),
+                    () -> assertEquals(URI.create("https://proxy.uri.com"), Config.builder().withWebhookURI(webhookURI).withProxyURI("https://proxy.uri.com").build().getProxyURI()),
                     () -> {
                         defaultProperties.put(Config.PROPERTY_PROXY_URI, "https://github.com");
                         assertEquals(URI.create("https://github.com"), new Config(defaultProperties).getProxyURI());
@@ -199,6 +222,26 @@ class MessagePublisherImplTest {
                     }
             );
         }
+
+        @Test
+        void blocking() {
+            assertAll(
+                    () -> assertFalse(new Config(defaultProperties).isBlocking()),
+                    () -> assertFalse(Config.builder().withWebhookURI(webhookURI).build().isBlocking()),
+                    () -> {
+                        defaultProperties.put(Config.PROPERTY_BLOCKING, Boolean.TRUE.toString());
+                        assertTrue(new Config(defaultProperties).isBlocking());
+                    },
+                    () -> {
+                        defaultProperties.put(Config.PROPERTY_BLOCKING, null);
+                        assertFalse(new Config(defaultProperties).isBlocking());
+                    },
+                    () -> {
+                        defaultProperties.put(Config.PROPERTY_BLOCKING, "everything but no URI");
+                        assertFalse(new Config(defaultProperties).isBlocking());
+                    }
+            );
+        }
     }
 
     @Nested
@@ -208,13 +251,13 @@ class MessagePublisherImplTest {
 
         private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
 
-        private Map<String, Object> getTestProperties() {
-            final Map<String, Object> testProperties = MessagePublisher.getDefaultProperties();
-            testProperties.put(Config.PROPERTY_WEBHOOK_URI, "https://test.webhook.com/");
-            testProperties.put(Config.PROPERTY_PROXY_URI, "https://proxy.webhook.com/");
-            testProperties.put(Config.PROPERTY_RETRIES, 1);
-            testProperties.put(Config.PROPERTY_RETRY_PAUSE, 1);
-            return testProperties;
+        private Config getTestProperties() {
+            return Config.builder()
+                    .withWebhookURI("https://test.webhook.com/")
+                    .withProxyURI("https://proxy.webhook.com/")
+                    .withRetries(1)
+                    .withPauseBetweenRetries(1)
+                    .build();
         }
 
         @Test
@@ -239,6 +282,25 @@ class MessagePublisherImplTest {
                         }
                     }
             );
+        }
+
+        @Test
+        @DisplayName("HttpEntity is created applying text, contentType and encoding")
+        void testGetInstanceWithProxy() {
+
+            String proxyUrl = "localhost:8080";
+            String webhookUrl = "https://proxy.webhook.com/";
+            MessagePublisherImpl publisher = (MessagePublisherImpl) MessagePublisher.getInstance(proxyUrl, webhookUrl);
+
+            Config config = publisher.getConfig();
+
+            assertNotNull(config);
+            assertNotNull(config.getProxyURI());
+            assertEquals(proxyUrl, config.getProxyURI().toString());
+            assertEquals(webhookUrl, config.getWebhookURI().toString());
+            assertEquals(Config.DEFAULT_RETRIES, config.getRetries());
+            assertEquals(Config.DEFAULT_PAUSE_BETWEEN_RETRIES, config.getPauseBetweenRetries());
+            assertEquals(Config.DEFAULT_BLOCKING, config.isBlocking());
         }
 
         @Test
@@ -288,8 +350,8 @@ class MessagePublisherImplTest {
                                 HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
                         );
 
-                final String enpointUrl = getExtractedUriButWrongPort(client);
-                final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(enpointUrl + "/MYENDPOINT");
+                final String endpointUrl = getExtractedUriButWrongPort(client);
+                final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(endpointUrl + "/MYENDPOINT");
                 ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
                 assertNotNull(publishedFuture);
                 Awaitility.await()
@@ -304,9 +366,48 @@ class MessagePublisherImplTest {
                                                         : 0 /* call failed since wrong port */)));
 
                 assertTrue(testee.getConfig().getRetries() > 1);
-                assertNotEquals(proxyUrl, enpointUrl);
+                assertNotEquals(proxyUrl, endpointUrl);
                 client.reset();
             });
+        }
+
+        @Test
+        @DisplayName("Publish behaves blocking when configured so")
+        void testBlocking(MockServerClient client) {
+            ConfigurationProperties.maxSocketTimeout(5000);
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+            client.when(
+                    // mock first n calls replying with 504
+                    mockedPost, Times.exactly(2)
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+            );
+            client.when(
+                    // n+1 call shall be successful
+                    mockedPost, Times.exactly(3)
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(2)
+                    .withBlocking(true)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+            assertNotNull(publishedFuture);
+            assertTrue(publishedFuture.isDone());
+
+            assertEquals(3, testee.getConfig().getRetries());
+            assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
+
+            client.verify(mockedPost, VerificationTimes.exactly(3));
+            assertTrue(testee.getConfig().getRetries() > 1);
+            client.reset();
         }
 
         @Test
@@ -337,11 +438,13 @@ class MessagePublisherImplTest {
                     HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
             );
 
-            final Map<String, Object> properties = MessagePublisher.getDefaultProperties();
             final String expectedUri = getExtractedUri(client);
-            properties.put(Config.PROPERTY_WEBHOOK_URI, expectedUri);
-            properties.put(Config.PROPERTY_RETRY_PAUSE, 1); // speed up the test
-            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(properties);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
 
             ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
             assertNotNull(publishedFuture);
