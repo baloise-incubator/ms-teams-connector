@@ -242,6 +242,19 @@ class MessagePublisherImplTest {
                     }
             );
         }
+
+        @Test
+        void verifyToString() {
+            final Config testee = Config.builder()
+                .withWebhookURI("https://github.com")
+                .withProxyURI("https://proxy.uri.com")
+                .withRetries(65)
+                .withPauseBetweenRetries(37)
+                .withBlocking(true).build();
+
+            assertEquals("Config(retries=65, pauseBetweenRetries=37000, webhookURI=https://github.com, proxyURI=https://proxy.uri.com, blocking=true)",
+                testee.toString());
+        }
     }
 
     @Nested
@@ -371,58 +384,10 @@ class MessagePublisherImplTest {
             });
         }
 
-        @Test
+        @ParameterizedTest
+        @ValueSource(ints = {0,1,2 /* lower max*/,3 /* exact max retries*/ ,5 /* more than max should default to max*/})
         @DisplayName("Publish behaves blocking when configured so")
-        void testBlocking(MockServerClient client) {
-            ConfigurationProperties.maxSocketTimeout(5000);
-            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
-            client.when(
-                    // mock first n calls replying with 504
-                    mockedPost, Times.exactly(2)
-            ).respond(
-                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
-            );
-            client.when(
-                    // n+1 call shall be successful
-                    mockedPost, Times.exactly(3)
-            ).respond(
-                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
-            );
-
-            final String expectedUri = getExtractedUri(client);
-            final Config config = Config.builder()
-                    .withWebhookURI(expectedUri)
-                    .withRetries(3)
-                    .withPauseBetweenRetries(2)
-                    .withBlocking(true)
-                    .build();
-            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
-
-            ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
-            assertNotNull(publishedFuture);
-            assertTrue(publishedFuture.isDone());
-
-            assertEquals(3, testee.getConfig().getRetries());
-            assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
-
-            client.verify(mockedPost, VerificationTimes.exactly(3));
-            assertTrue(testee.getConfig().getRetries() > 1);
-            client.reset();
-        }
-
-        @Test
-        @DisplayName("POST is executed 2 times during failure")
-        void test2RetriesInCaseOfFailure(MockServerClient client) {
-            testRetrials(client, 1);
-        }
-
-        @Test
-        @DisplayName("POST is executed 3 times during failure")
-        void test3RetriesInCaseOfFailure(MockServerClient client) {
-            testRetrials(client, 2);
-        }
-
-        private void testRetrials(MockServerClient client, int numberOf504Replies) {
+        void testBlockingint(int numberOf504Replies, MockServerClient client) {
             ConfigurationProperties.maxSocketTimeout(5000);
             final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
             client.when(
@@ -439,9 +404,55 @@ class MessagePublisherImplTest {
             );
 
             final String expectedUri = getExtractedUri(client);
+            final int maxRetries = 3;
             final Config config = Config.builder()
                     .withWebhookURI(expectedUri)
-                    .withRetries(3)
+                    .withRetries(maxRetries)
+                    .withPauseBetweenRetries(2)
+                    .withBlocking(true)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
+            assertNotNull(publishedFuture);
+            assertTrue(publishedFuture.isDone());
+
+            assertEquals(maxRetries, testee.getConfig().getRetries());
+            assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
+
+            final int expected = (numberOf504Replies >= maxRetries - 1)
+                ? maxRetries
+                : numberOf504Replies + 1;
+
+            client.verify(mockedPost, VerificationTimes.exactly(expected));
+            assertTrue(testee.getConfig().getRetries() > 1);
+            client.reset();
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0,1,2 /* lower max*/,3 /* exact max retries*/ ,5 /* more than max should default to max*/})
+        @DisplayName("POST is executed n times during failure")
+        void testRetriesInCaseOfFailure(int numberOf504Replies, MockServerClient client) {
+            ConfigurationProperties.maxSocketTimeout(5000);
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+            client.when(
+                    // mock first n calls replying with 504
+                    mockedPost, Times.exactly(numberOf504Replies)
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+            );
+            client.when(
+                    // n+1 call shall be successful
+                    mockedPost, Times.exactly(numberOf504Replies + 1)
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final int maxRetries = 3;
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(maxRetries)
                     .withPauseBetweenRetries(1)
                     .build();
             final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
@@ -449,15 +460,18 @@ class MessagePublisherImplTest {
             ScheduledFuture<?> publishedFuture = testee.publish(testMessage);
             assertNotNull(publishedFuture);
 
-            assertEquals(3, testee.getConfig().getRetries());
+            assertEquals(maxRetries, testee.getConfig().getRetries());
             assertEquals(expectedUri, testee.getConfig().getWebhookURI().toString());
 
+            final int expected = (numberOf504Replies >= maxRetries - 1)
+                ? maxRetries
+                : numberOf504Replies + 1;
             Awaitility.await()
                     .atMost(Durations.FIVE_SECONDS /* wait for executor service */)
                     .untilAsserted(() ->
                             client.verify(mockedPost.withBody(testMessage)
                                             .withContentType(MediaType.JSON_UTF_8),
-                                    VerificationTimes.exactly(numberOf504Replies + 1)));
+                                    VerificationTimes.exactly(expected)));
             client.reset();
         }
 
