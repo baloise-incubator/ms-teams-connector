@@ -76,21 +76,26 @@ class MessagePublisherImpl implements MessagePublisher {
                 0 /* no delay */,
                 config.getPauseBetweenRetries(),
                 TimeUnit.MILLISECONDS);
+
         if (config.isBlocking()) {
-            log.debug("Blocking mode is enabled, waiting for the webhook to return a response.");
-            try {
-                long terminationTimeout = (config.getRetries() + 1) * config.getPauseBetweenRetries();
-                if (!executor.awaitTermination(terminationTimeout, TimeUnit.SECONDS)) {
-                    log.warn("Webhook did not return a response within the timeout period.");
-                }
-            } catch (InterruptedException e) {
-                log.error("InterruptedException: ", e);
-                Thread.currentThread().interrupt();
-            }
-        } else {
-            log.debug("Non-blocking mode is enabled, scheduling retries until the webhook returns a response.");
+            awaitTermination(executor);
         }
         return scheduledFuture;
+    }
+
+    private void awaitTermination(final ScheduledExecutorService executor) {
+        long terminationTimeout = (config.getRetries()) * config.getPauseBetweenRetries();
+        try {
+            log.debug("Blocking mode is enabled, waiting for max {}ms for the webhook to return a response.", terminationTimeout);
+            if (!executor.awaitTermination(terminationTimeout, TimeUnit.MILLISECONDS)) {
+                log.warn("Webhook did not return a response within the timeout period of {} seconds.", terminationTimeout);
+            }
+        } catch (InterruptedException e) {
+            log.error("InterruptedException: ", e);
+            Thread.currentThread().interrupt();
+        } finally {
+            log.debug("continue");
+        }
     }
 
     Config getConfig() {
