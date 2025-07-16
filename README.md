@@ -11,6 +11,9 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 
 ## Change Log
 
+- Version 0.5.0
+  - support blocking thread executor for batch / cli usage
+  - ⚠️ __Breaking__: removed deprecated config parameter
 - Version 0.4.0 is the first version supporting AdaptiveCards
 - Version 0.2.3 is the last version supporting Java 8
 
@@ -27,7 +30,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 
@@ -59,12 +62,13 @@ AdaptiveCardFactory.builder("A crisp title", "A little more descriptive text.")
 
 ## Configuration
 
-| Parameter            | Default | Description                                                                                                                         |
-|----------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------|
-| PROPERTY_RETRIES     | 3       | Defines the number of retries to publish the message in case of unsuccessful answer from webhook. Accepts any positive integer > 0. |
-| PROPERTY_RETRY_PAUSE | 60      | Defines the pause time between PROPERTY_RETRIES in seconds. Accepts any positive integer > 0.                                       |
-| PROPERTY_WEBHOOK_URI | none    | The URI to your webhook. Required property provided either as String or URI.                                                        |
-| PROPERTY_PROXY_URI   | none    | The URI to your web proxy.                                                                                                          |
+| Parameter            | Default | Description                                                                                                                               |
+|----------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| PROPERTY_RETRIES     | 3       | Defines the number of retries to publish the message in case of unsuccessful answer from webhook. Accepts any positive integer > 0.       |
+| PROPERTY_RETRY_PAUSE | 60      | Defines the pause time between PROPERTY_RETRIES in seconds. Accepts any positive integer > 0.                                             |
+| PROPERTY_WEBHOOK_URI | none    | The URI to your webhook. Required property provided either as String or URI.                                                              |
+| PROPERTY_PROXY_URI   | none    | The URI to your web proxy.                                                                                                                |
+| PROPERTY_BLOCKING    | false   | Set to ___true___ to block main thread until message was sent or max retries time is reached. Default is sending messages asynchronously. |
 
 ### System Environment
 
