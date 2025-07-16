@@ -16,6 +16,7 @@
 package com.baloise.open.ms.teams;
 
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 @Slf4j
 @Getter
+@ToString
 public final class Config {
     public static final long DEFAULT_PAUSE_BETWEEN_RETRIES = 60000;
     public static final int DEFAULT_RETRIES = 3;
