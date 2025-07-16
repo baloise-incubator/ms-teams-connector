@@ -23,24 +23,6 @@ import java.util.concurrent.ScheduledFuture;
 
 public interface MessagePublisher {
 
-    /**
-     * @deprecated use Config.PROPERTY_RETRIES instead
-     */
-    @Deprecated(forRemoval = true, since = "0.3.1")
-    String PROPERTY_RETRIES = Config.PROPERTY_RETRIES;
-
-    /**
-     * @deprecated use Config.PROPERTY_RETRY_PAUSE instead
-     */
-    @Deprecated(forRemoval = true, since = "0.3.1")
-    String PROPERTY_RETRY_PAUSE = Config.PROPERTY_RETRY_PAUSE;
-
-    /**
-     * @deprecated use Config.PROPERTY_WEBHOOK_URI instead
-     */
-    @Deprecated(forRemoval = true, since = "0.3.1")
-    String PROPERTY_WEBHOOK_URI = Config.PROPERTY_WEBHOOK_URI;
-
     static MessagePublisher getInstance(String uri) {
         return getInstance(Config.builder().withWebhookURI(uri).build());
     }
