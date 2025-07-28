@@ -73,7 +73,7 @@
     <sonar.java.codeCoveragePlugin>jacoco</sonar.java.codeCoveragePlugin>
     <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco/jacoco.xml
     </sonar.coverage.jacoco.xmlReportPaths>
-    <junit-jupiter.version>5.13.3</junit-jupiter.version>
+    <junit-jupiter.version>5.13.4</junit-jupiter.version>
     <mockito-core.version>5.18.0</mockito-core.version>
   </properties>
 
