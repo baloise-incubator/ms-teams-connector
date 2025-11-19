@@ -32,9 +32,15 @@ class TeamsMessageTest {
         JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.STRICT);
     }
 
-    @Test
-    void shouldFailOnBlankSummary() {
-        Executable exec = () -> TeamsMessageFactory.createTeamsMessageWithAdaptiveCard(" ", AdaptiveCardFactory.createSimpleAdaptiveCard("MyTitle","Hello"));
-        assertThrows(IllegalArgumentException.class, exec);
-    }
+  @Test
+  void shouldFailOnBlankSummary() {
+    Executable exec = () -> TeamsMessageFactory.createTeamsMessageWithAdaptiveCard(" ", AdaptiveCardFactory.createSimpleAdaptiveCard("MyTitle","Hello"));
+    assertThrows(IllegalArgumentException.class, exec);
+  }
+
+  @Test
+  void shouldFailOnNullAdaptiveCard() {
+    Executable exec = () -> TeamsMessageFactory.createTeamsMessageWithAdaptiveCard("MySummary", null);
+    assertThrows(IllegalArgumentException.class, exec);
+  }
 }

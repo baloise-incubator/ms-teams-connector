@@ -3,7 +3,10 @@ package com.baloise.open.ms.teams.webhook;
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.json.Serializer;
 import com.baloise.open.ms.teams.templates.AdaptiveCard;
+import com.baloise.open.ms.teams.templates.AdaptiveCardFactory;
 import com.baloise.open.ms.teams.templates.Badge;
+import com.baloise.open.ms.teams.templates.TeamsMessage;
+import com.baloise.open.ms.teams.templates.TeamsMessageFactory;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -353,6 +356,31 @@ class MessagePublisherImplTest {
               .atMost(Durations.FIVE_SECONDS)
               .untilAsserted(() -> client.verify(mockedPost, VerificationTimes.exactly(1)));
             assertTrue(testee.getConfig().getRetries() > 1);
+            client.reset();
+        }
+
+        @Test
+        @DisplayName("publish(TeamsMessage) sends JSON to webhook")
+        void testPublishTeamsMessage(MockServerClient client) {
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(getExtractedUri(client));
+            TeamsMessage message = TeamsMessageFactory.createTeamsMessageWithAdaptiveCard(
+                    "SummaryTest",
+                    AdaptiveCardFactory.createSimpleAdaptiveCard("TitleTest", "BodyTest")
+            );
+
+            ScheduledFuture<?> future = testee.publish(message); // nutzt default publish(TeamsMessage)
+            assertNotNull(future);
+
+            final HttpRequest expectedPost = HttpRequest.request()
+                    .withMethod("POST")
+                    .withContentType(MediaType.JSON_UTF_8)
+                    .withBody(Serializer.asJson(message));
+
+            Awaitility.await()
+                    .atMost(Durations.FIVE_SECONDS)
+                    .untilAsserted(() -> client.verify(expectedPost, VerificationTimes.exactly(1)));
+
+            assertTrue(testee.getConfig().getRetries() > 1); // konsistent mit anderen Tests
             client.reset();
         }
 
