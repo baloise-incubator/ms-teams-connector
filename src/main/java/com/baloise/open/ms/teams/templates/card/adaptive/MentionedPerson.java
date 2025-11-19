@@ -13,26 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 /**
- * <p>A formatted and syntax-colored code block.</p> *
- * <a href="https://adaptivecards.microsoft.com/?topic=CodeBlock" target="_blank">CodeBlock reference</a>
+ * <p>Represents a mentioned person.</p>
+ * <a href="https://adaptivecards.microsoft.com/?topic=MentionedPersion" target="_blank">MentionedPersion reference</a>
  */
 @Data
-@SuperBuilder
+@Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class CodeBlock extends AdaptiveObject {
-    private final String type = Type.CODE_BLOCK.getJsonValue();
-    private String language;
-    private String codeSnippet;
-    private Integer startLineNumber;
+public class MentionedPerson {
+    /**
+     * <p>The Id of a mentioned person entity, typically a Microsoft Entra user Id.</p>
+     *
+     * <p>For a person this is normally their email address.</p>
+     */
+    private String id;
+    /**
+     * The name of the mentioned person.
+     */
+    private String name;
 }

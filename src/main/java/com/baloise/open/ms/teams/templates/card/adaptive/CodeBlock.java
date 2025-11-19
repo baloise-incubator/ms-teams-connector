@@ -13,29 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 /**
- * <p>Represents a set of Teams-specific properties on a card.</p>
- * <a href="https://adaptivecards.microsoft.com/?topic=TeamsCardProperties" target="_blank">TeamsCardProperties reference</a>
+ * <p>A formatted and syntax-colored code block.</p> *
+ * <a href="https://adaptivecards.microsoft.com/?topic=CodeBlock" target="_blank">CodeBlock reference</a>
  */
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class TeamsCardProperties {
-    private List<Mention> entities;
-    /**
-     * Note that setting width to "full" will not actually stretch the card to the "full width" of the chat pane.
-     * It will only make the card wider than when the width property isn't set.
-     */
-    @Builder.Default
-    private String width = "full";
+@EqualsAndHashCode(callSuper = true)
+public class CodeBlock extends AdaptiveObject {
+    private final String type = Type.CODE_BLOCK.getJsonValue();
+    private String language;
+    private String codeSnippet;
+    private Integer startLineNumber;
 }

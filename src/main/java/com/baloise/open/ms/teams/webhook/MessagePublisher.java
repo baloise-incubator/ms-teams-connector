@@ -16,8 +16,7 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
-import com.baloise.open.ms.teams.templates.AdaptiveCard;
-
+import com.baloise.open.ms.teams.templates.Card;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
@@ -46,7 +45,7 @@ public interface MessagePublisher {
     /**
      * transmits provided AdaptiveCard as parsed JSON String to webhook
      */
-    ScheduledFuture<?> publish(AdaptiveCard adaptiveCard);
+    ScheduledFuture<?> publish(Card adaptiveCard);
 
     /**
      * transmits provided jsonfied String to configured webhook

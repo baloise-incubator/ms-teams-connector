@@ -13,23 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * <p>A fact in a FactSet element.</p> *
- * <a href="https://adaptivecards.microsoft.com/?topic=Fact" target="_blank">Fact reference</a>
+ * <p>Represents a set of Teams-specific properties on a card.</p>
+ * <a href="https://adaptivecards.microsoft.com/?topic=TeamsCardProperties" target="_blank">TeamsCardProperties reference</a>
  */
 @Data
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Fact {
-    private String title;
-    private String value;
+public class TeamsCardProperties {
+    private List<Mention> entities;
+    /**
+     * Note that setting width to "full" will not actually stretch the card to the "full width" of the chat pane.
+     * It will only make the card wider than when the width property isn't set.
+     */
+    @Builder.Default
+    private String width = "full";
 }
-

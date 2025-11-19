@@ -18,16 +18,15 @@ package com.baloise.open.ms.teams.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class Serializer {
 
-  private static final String PACKAGE_NAME = "com.baloise.open.ms.teams.templates";
+  private static final String PACKAGE_NAME = "com.baloise.open.ms.teams.templates.card.adaptive";
   private static final Class<JsonSerializableEnum> ASSIGNED_INTERFACE = JsonSerializableEnum.class;
   private static final EnumSerializer ENUM_SERIALIZER = new EnumSerializer();
   private static final Gson GSON = getConfiguredJson();

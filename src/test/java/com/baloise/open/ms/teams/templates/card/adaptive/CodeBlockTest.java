@@ -1,4 +1,4 @@
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
 import com.baloise.open.ms.teams.json.Serializer;

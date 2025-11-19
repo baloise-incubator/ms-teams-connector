@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
+import com.baloise.open.ms.teams.templates.Card;
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 /**
  * <p>An Adaptive Card, containing a free-form body of card elements, and an optional set of actions.</p>
@@ -31,7 +31,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class AdaptiveCard {
+public class AdaptiveCard implements Card {
     private final String type = AdaptiveObject.Type.ADAPTIVE_CARD.getJsonValue();
 
     private final String version = "1.5";

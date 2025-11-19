@@ -1,10 +1,9 @@
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
 import com.baloise.open.ms.teams.json.Serializer;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

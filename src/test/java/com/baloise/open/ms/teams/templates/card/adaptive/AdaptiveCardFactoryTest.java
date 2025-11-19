@@ -1,9 +1,9 @@
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
-import org.junit.jupiter.api.Test;
-
+import com.baloise.open.ms.teams.templates.AdaptiveCardFactory;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,22 +21,15 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * <p>Represents a mentioned person.</p>
- * <a href="https://adaptivecards.microsoft.com/?topic=MentionedPersion" target="_blank">MentionedPersion reference</a>
+ * <p>A fact in a FactSet element.</p> *
+ * <a href="https://adaptivecards.microsoft.com/?topic=Fact" target="_blank">Fact reference</a>
  */
 @Data
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class MentionedPerson {
-    /**
-     * <p>The Id of a mentioned person entity, typically a Microsoft Entra user Id.</p>
-     *
-     * <p>For a person this is normally their email address.</p>
-     */
-    private String id;
-    /**
-     * The name of the mentioned person.
-     */
-    private String name;
+public class Fact {
+    private String title;
+    private String value;
 }
+

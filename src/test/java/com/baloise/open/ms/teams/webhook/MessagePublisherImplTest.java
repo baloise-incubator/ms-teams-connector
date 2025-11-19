@@ -2,8 +2,15 @@ package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.json.Serializer;
-import com.baloise.open.ms.teams.templates.AdaptiveCard;
-import com.baloise.open.ms.teams.templates.Badge;
+import com.baloise.open.ms.teams.templates.card.adaptive.AdaptiveCard;
+import com.baloise.open.ms.teams.templates.card.adaptive.Badge;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -27,14 +34,6 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 import org.mockserver.verify.VerificationTimes;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -300,7 +299,6 @@ class MessagePublisherImplTest {
         @Test
         @DisplayName("HttpEntity is created applying text, contentType and encoding")
         void testGetInstanceWithProxy() {
-
             String proxyUrl = "localhost:8080";
             String webhookUrl = "https://proxy.webhook.com/";
             MessagePublisherImpl publisher = (MessagePublisherImpl) MessagePublisher.getInstance(proxyUrl, webhookUrl);

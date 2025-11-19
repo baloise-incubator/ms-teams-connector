@@ -1,4 +1,4 @@
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import com.baloise.open.ms.teams.PropertyReflectionTest;
 import com.baloise.open.ms.teams.json.Serializer;
@@ -6,28 +6,28 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MentionedPersonTest extends PropertyReflectionTest {
+class FactTest extends PropertyReflectionTest {
 
-    private final MentionedPerson testee = MentionedPerson.builder()
-            .id("id")
-            .name("name")
+    private final Fact testee = Fact.builder()
+            .title("title")
+            .value("value")
             .build();
 
     @Test
     void verifyNumberOfProperties() {
-        this.assertNumberOfProperties(MentionedPerson.class, 2);
+        this.assertNumberOfProperties(Fact.class, 2);
     }
 
     @Test
     void verifyDefaults() {
-        assertEquals("id", testee.getId());
-        assertEquals("name", testee.getName());
+        assertEquals("title", testee.getTitle());
+        assertEquals("value", testee.getValue());
     }
 
     @Test
     void verifySerializaion() {
         assertEquals(
-                "{\"id\":\"id\",\"name\":\"name\"}",
+                "{\"title\":\"title\",\"value\":\"value\"}",
                 Serializer.asJson(testee)
         );
     }

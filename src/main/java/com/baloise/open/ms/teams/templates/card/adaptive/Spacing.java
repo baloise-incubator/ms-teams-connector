@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.adaptive;
 
 import com.baloise.open.ms.teams.json.JsonSerializableEnum;
 import lombok.Getter;
 
-import static com.baloise.open.ms.teams.templates.AdaptiveObject.JSON_VALUE_DEFAULT;
+import static com.baloise.open.ms.teams.templates.card.adaptive.AdaptiveObject.JSON_VALUE_DEFAULT;
 
 @Getter
 public enum Spacing implements JsonSerializableEnum {
