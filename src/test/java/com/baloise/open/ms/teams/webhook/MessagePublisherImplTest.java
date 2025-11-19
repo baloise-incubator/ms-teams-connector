@@ -330,7 +330,9 @@ class MessagePublisherImplTest {
                     .withContentType(MediaType.JSON_UTF_8)
                     .withBody(Serializer.asJson(adaptiveCard));
 
-            client.verify(mockedPost, VerificationTimes.exactly(1));
+            Awaitility.await()
+              .atMost(Durations.FIVE_SECONDS)
+              .untilAsserted(() -> client.verify(mockedPost, VerificationTimes.exactly(1)));
             assertTrue(testee.getConfig().getRetries() > 1);
             client.reset();
         }
@@ -347,7 +349,9 @@ class MessagePublisherImplTest {
                     .withContentType(MediaType.JSON_UTF_8)
                     .withBody(testMessage);
 
-            client.verify(mockedPost, VerificationTimes.exactly(1));
+            Awaitility.await()
+              .atMost(Durations.FIVE_SECONDS)
+              .untilAsserted(() -> client.verify(mockedPost, VerificationTimes.exactly(1)));
             assertTrue(testee.getConfig().getRetries() > 1);
             client.reset();
         }
