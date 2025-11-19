@@ -17,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class TeamsMessage {
+    @Builder.Default
     private final String type = "message";
     private String summary;
     @Builder.Default

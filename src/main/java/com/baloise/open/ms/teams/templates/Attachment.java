@@ -31,6 +31,7 @@ public class Attachment {
     /**
      * Fixed content type for adaptive card attachments.
      */
+    @Builder.Default
     private final String contentType = "application/vnd.microsoft.card.adaptive";
 
     /**
