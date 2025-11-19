@@ -13,7 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.message;
 
-public interface Card {
+import com.baloise.open.ms.teams.templates.Card;
+import com.google.gson.annotations.SerializedName;
+import java.util.List;
+
+public record MessageCard (
+  String themeColor,
+  String summary,
+  List<Section> sections,
+  List<PotentialAction> potentialAction
+) implements Card {
+
+  @SerializedName(value = "@type") public String type() {
+    return "MessageCard";
+  }
+
+  @SerializedName("@context") public String context() {
+    return "http://schema.org/extensions";
+  }
+
 }

@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.message;
 
-public interface Card {
+import com.google.gson.annotations.SerializedName;
+import java.util.List;
+
+public record OpenUri(
+  String name,
+  List<Target> targets
+) implements PotentialAction {
+  @SerializedName("@type")
+  public String type() {
+    return "OpenUri";
+  }
 }

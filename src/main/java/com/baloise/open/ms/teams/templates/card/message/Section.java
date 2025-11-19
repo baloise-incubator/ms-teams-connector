@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.message;
 
-public interface Card {
-}
+import java.util.List;
+
+public record Section(
+  String activityTitle,
+  String activitySubtitle,
+  String activityImage,
+  List<Fact> facts,
+  boolean markdown
+) {}

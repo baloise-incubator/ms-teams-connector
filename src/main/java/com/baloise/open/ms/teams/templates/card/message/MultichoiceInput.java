@@ -13,7 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baloise.open.ms.teams.templates;
+package com.baloise.open.ms.teams.templates.card.message;
 
-public interface Card {
+import com.google.gson.annotations.SerializedName;
+import java.util.List;
+
+public record MultichoiceInput(
+  String id,
+  String title,
+  String isMultiSelect,
+  List<Choice> choices
+) implements Input {
+  @SerializedName("@type")
+  public String type() {
+    return "MultichoiceInput";
+  }
 }
