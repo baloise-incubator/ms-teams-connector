@@ -11,6 +11,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 
 ## Change Log
 
+- version 0.6.0 provides message format wrapper to publish in MS Teams
 - Version 0.5.0
   - support blocking thread executor for batch / cli usage
   - ⚠️ __Breaking__: removed deprecated config parameter
@@ -30,7 +31,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 
@@ -43,8 +44,9 @@ final MessagePublisher channelPublisher = MessagePublisher.getInstance(uri);
 
 Now you can publish any message using MessagePublisher (e.g., create and publish a simple message)
 ```java
-final AdaptiveCard msg = AdaptiveCardFactory.createSimpleAdaptiveCard("Title", "Hello **World**");
-ScheduledFuture<?> publishedFuture = channelPublisher.publish(msg);
+final var card = AdaptiveCardFactory.createSimpleAdaptiveCard("Title 2", "Hello **World**");
+final var msg = TeamsMessageFactory.createTeamsMessageWithAdaptiveCard("Title 2", card);
+final ScheduledFuture<?> scheduledFuture = MessagePublisher.getInstance(proxy, uri).publish(msg);
 ```
 ![Example](docs/img/result_example.png)
 

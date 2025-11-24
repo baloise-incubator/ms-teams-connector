@@ -15,6 +15,7 @@
  */
 package com.baloise.open.ms.teams.templates;
 
+import com.baloise.open.ms.teams.json.SerializableMessage;
 import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +32,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class AdaptiveCard {
+public class AdaptiveCard implements SerializableMessage {
     private final String type = AdaptiveObject.Type.ADAPTIVE_CARD.getJsonValue();
 
     private final String version = "1.5";

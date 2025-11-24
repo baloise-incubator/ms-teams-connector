@@ -16,10 +16,7 @@
 package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
-import com.baloise.open.ms.teams.templates.AdaptiveCard;
-import com.baloise.open.ms.teams.templates.TeamsMessage;
-import com.baloise.open.ms.teams.json.Serializer;
-
+import com.baloise.open.ms.teams.json.SerializableMessage;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
@@ -48,17 +45,11 @@ public interface MessagePublisher {
     /**
      * transmits provided AdaptiveCard as parsed JSON String to webhook
      */
-    ScheduledFuture<?> publish(AdaptiveCard adaptiveCard);
+    ScheduledFuture<?> publish(SerializableMessage message);
 
     /**
      * transmits provided jsonfied String to configured webhook
      */
     ScheduledFuture<?> publish(String jsonBody);
 
-    /**
-     * Convenience method to transmit a full Teams message wrapper (with attachments).
-     */
-    default ScheduledFuture<?> publish(TeamsMessage teamsMessage) {
-        return publish(Serializer.asJson(teamsMessage));
-    }
 }
