@@ -368,8 +368,7 @@ class MessagePublisherImplTest {
                     AdaptiveCardFactory.createSimpleAdaptiveCard("TitleTest", "BodyTest")
             );
 
-            ScheduledFuture<?> future = testee.publish(message); // nutzt default publish(TeamsMessage)
-            assertNotNull(future);
+            assertNotNull(testee.publish(message));
 
             final HttpRequest expectedPost = HttpRequest.request()
                     .withMethod("POST")
@@ -380,7 +379,7 @@ class MessagePublisherImplTest {
                     .atMost(Durations.FIVE_SECONDS)
                     .untilAsserted(() -> client.verify(expectedPost, VerificationTimes.exactly(1)));
 
-            assertTrue(testee.getConfig().getRetries() > 1); // konsistent mit anderen Tests
+            assertTrue(testee.getConfig().getRetries() > 1);
             client.reset();
         }
 
