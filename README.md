@@ -62,6 +62,57 @@ AdaptiveCardFactory.builder("A crisp title", "A little more descriptive text.")
     .build();
 ```
 
+## CLI Usage (ConnectorApplication)
+
+A standalone shaded application is provided so you can publish a card without writing any Java code. You only set environment variables and run the jar.
+
+### Build the executable jar
+
+Use Maven to build the shaded application jar (classifier `app`).
+
+### Required environment variables
+
+| Name | Description |
+|------|-------------|
+| WEBHOOK_URL | Teams incoming webhook URL (target channel). |
+| MESSAGE_TITLE | Card title. |
+| MESSAGE_TEXT | Markdown body text of the card. |
+
+### Optional environment variables
+
+| Name | Description | Default |
+|------|-------------|---------|
+| MESSAGE_SUMMARY | Short textual summary (shown in notifications). | none |
+| MESSAGE_THEME_COLOR | Hex or named color (Teams may map it). | none |
+| RETRIES | Number of publish retries (>0). Invalid values are ignored. | 3 |
+| RETRY_PAUSE_SEC | Pause between retries in seconds (>0). Invalid values are ignored. | 60 |
+| https_proxy / HTTPS_PROXY | Proxy URL if outbound traffic requires a proxy. | none |
+
+Notes:
+- Invalid integer values for RETRIES / RETRY_PAUSE_SEC are ignored with a warning; defaults are used.
+- RETRY_PAUSE_SEC is interpreted in seconds; internally it is converted to milliseconds.
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success: publish job was initialized. |
+| 2 | Validation error: one or more required environment variables missing. |
+
+Other issues (e.g. network failures) surface via log output; retries will occur automatically.
+
+### Mapping: Environment vs Config properties
+
+| Environment | Config Property | Notes |
+|-------------|-----------------|-------|
+| WEBHOOK_URL | PROPERTY_WEBHOOK_URI | Mandatory in both. |
+| RETRIES | PROPERTY_RETRIES | Positive integer. |
+| RETRY_PAUSE_SEC | PROPERTY_RETRY_PAUSE | Seconds. Internally converted to ms. |
+| https_proxy / HTTPS_PROXY | PROPERTY_PROXY_URI | CLI uses environment; property ignored. |
+| (none) | PROPERTY_BLOCKING | CLI always performs a short non-blocking wait (internal Awaitility poll). |
+
+If you need finer control (blocking behavior, programmatic composition) use the library API instead of the CLI.
+
 ## Configuration
 
 | Parameter            | Default | Description                                                                                                                               |
