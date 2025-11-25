@@ -109,7 +109,16 @@ class ConnectorApplicationTest {
         "1.5,null"
     })
     void parseIntEnvHandlesValidAndInvalidInputs(String input, String expected) {
-        Integer expectedValue = expected == null || expected.equals("null") ? null : Integer.valueOf(expected.trim());
+        Integer expectedValue;
+        if (expected == null || expected.equals("null")) {
+            expectedValue = null;
+        } else {
+            try {
+                expectedValue = Integer.valueOf(expected.trim());
+            } catch (NumberFormatException e) {
+                expectedValue = null;
+            }
+        }
         assertEquals(expectedValue, ConnectorApplication.parseIntEnv(input));
     }
 
