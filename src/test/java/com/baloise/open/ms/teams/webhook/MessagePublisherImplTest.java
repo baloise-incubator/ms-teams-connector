@@ -518,4 +518,238 @@ class MessagePublisherImplTest {
                     client.remoteAddress().getPort() - 1);
         }
     }
+
+    @Nested
+    @DisplayName("Test publishSync method")
+    @ExtendWith(MockServerExtension.class)
+    class PublishSyncTest {
+
+        private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
+
+        private Config getTestProperties() {
+            return Config.builder()
+                    .withWebhookURI("https://test.webhook.com/")
+                    .withProxyURI("https://proxy.webhook.com/")
+                    .withRetries(1)
+                    .withPauseBetweenRetries(1)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("publishSync with SerializableMessage sends JSON to webhook")
+        void testPublishSyncWithSerializableMessage(MockServerClient client) {
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            final AdaptiveCard adaptiveCard = AdaptiveCard.builder().body(List.of(Badge.builder().build())).build();
+
+            final HttpRequest expectedPost = HttpRequest.request()
+                    .withMethod("POST")
+                    .withContentType(MediaType.JSON_UTF_8)
+                    .withBody(Serializer.asJson(adaptiveCard));
+
+            testee.publishSync(adaptiveCard);
+
+            client.verify(expectedPost, VerificationTimes.exactly(1));
+            client.reset();
+        }
+
+        @Test
+        @DisplayName("publishSync with String sends JSON to webhook")
+        void testPublishSyncWithString(MockServerClient client) {
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            final HttpRequest expectedPost = HttpRequest.request()
+                    .withMethod("POST")
+                    .withContentType(MediaType.JSON_UTF_8)
+                    .withBody(testMessage);
+
+            testee.publishSync(testMessage);
+
+            client.verify(expectedPost, VerificationTimes.exactly(1));
+            client.reset();
+        }
+
+        @Test
+        @DisplayName("publishSync with TeamsMessage sends JSON to webhook")
+        void testPublishSyncWithTeamsMessage(MockServerClient client) {
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            TeamsMessage message = TeamsMessageFactory.createTeamsMessageWithAdaptiveCard(
+                    "SummaryTest",
+                    AdaptiveCardFactory.createSimpleAdaptiveCard("TitleTest", "BodyTest")
+            );
+
+            final HttpRequest expectedPost = HttpRequest.request()
+                    .withMethod("POST")
+                    .withContentType(MediaType.JSON_UTF_8)
+                    .withBody(Serializer.asJson(message));
+
+            testee.publishSync(message);
+
+            client.verify(expectedPost, VerificationTimes.exactly(1));
+            client.reset();
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, 1, 2 /* lower max*/})
+        @DisplayName("publishSync retries on failure and succeeds")
+        void testPublishSyncRetriesOnFailure(int numberOf504Replies, MockServerClient client) {
+            ConfigurationProperties.maxSocketTimeout(5000);
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+
+            // Mock first n calls replying with 504
+            client.when(
+                    mockedPost, Times.exactly(numberOf504Replies)
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+            );
+
+            // n+1 call shall be successful
+            client.when(
+                    mockedPost
+            ).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_OK)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final int maxRetries = 3;
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(maxRetries)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            testee.publishSync(testMessage);
+
+            final int expected = numberOf504Replies + 1;
+            client.verify(mockedPost.withBody(testMessage)
+                            .withContentType(MediaType.JSON_UTF_8),
+                    VerificationTimes.exactly(expected));
+            client.reset();
+        }
+
+        @Test
+        @DisplayName("publishSync throws RuntimeException after max retries exceeded")
+        void testPublishSyncThrowsExceptionAfterMaxRetries(MockServerClient client) {
+            ConfigurationProperties.maxSocketTimeout(5000);
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final int maxRetries = 3;
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(maxRetries)
+                    .withPauseBetweenRetries(1)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            RuntimeException exception = assertThrows(RuntimeException.class, () -> testee.publishSync(testMessage));
+
+            assertEquals("Failed to publish message after retries", exception.getMessage());
+            client.verify(mockedPost.withBody(testMessage)
+                            .withContentType(MediaType.JSON_UTF_8),
+                    VerificationTimes.exactly(maxRetries));
+            client.reset();
+        }
+
+        @Test
+        @DisplayName("publishSync handles thread interruption")
+        void testPublishSyncHandlesInterruption(MockServerClient client) {
+            ConfigurationProperties.maxSocketTimeout(5000);
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(HttpStatus.SC_GATEWAY_TIMEOUT)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final Config config = Config.builder()
+                    .withWebhookURI(expectedUri)
+                    .withRetries(3)
+                    .withPauseBetweenRetries(1000)
+                    .build();
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(config);
+
+            Thread testThread = new Thread(() -> {
+                Thread.currentThread().interrupt();
+                RuntimeException exception = assertThrows(RuntimeException.class, () -> testee.publishSync(testMessage));
+                assertEquals("Thread was interrupted", exception.getMessage());
+                assertTrue(Thread.currentThread().isInterrupted());
+            });
+
+            testThread.start();
+            try {
+                testThread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            client.reset();
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {HttpStatus.SC_OK, HttpStatus.SC_ACCEPTED})
+        @DisplayName("publishSync succeeds with OK or ACCEPTED status codes")
+        void testPublishSyncSucceedsWithValidStatusCodes(int statusCode, MockServerClient client) {
+            final HttpRequest mockedPost = HttpRequest.request().withMethod("POST");
+
+            client.when(mockedPost).respond(
+                    HttpResponse.response().withBody("{}").withStatusCode(statusCode)
+            );
+
+            final String expectedUri = getExtractedUri(client);
+            final MessagePublisherImpl testee = (MessagePublisherImpl) MessagePublisher.getInstance(expectedUri);
+
+            testee.publishSync(testMessage);
+
+            client.verify(mockedPost.withBody(testMessage)
+                            .withContentType(MediaType.JSON_UTF_8),
+                    VerificationTimes.exactly(1));
+            client.reset();
+        }
+
+        private String getExtractedUri(MockServerClient client) {
+            return "http://%s:%d".formatted(
+                    client.remoteAddress().getAddress().getHostAddress(),
+                    client.remoteAddress().getPort());
+        }
+    }
 }
