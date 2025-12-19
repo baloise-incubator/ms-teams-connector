@@ -73,9 +73,7 @@ public class ConnectorApplication {
                 .withPauseBetweenRetries(pauseMs/1000)
                 .build();
         MessagePublisher publisher = MessagePublisher.getInstance(config);
-        ScheduledFuture<?> future = publisher.publish(message);
-        log.info("Publish job initialisiert. Future={}.", future);
-        Awaitility.await().pollInterval(Duration.ofSeconds(2)).until(() -> true);
+        publisher.publishSync(message);
         return 0;
     }
 

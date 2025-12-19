@@ -101,6 +101,24 @@ class MessagePublisherImpl implements MessagePublisher {
         return config;
     }
 
+    @Override
+    public CloseableHttpClient getHttpClient() {
+        return Optional.ofNullable(config.getProxyURI())
+                .or(() -> Stream.of(System.getenv("https_proxy"), System.getenv("HTTPS_PROXY"))
+                        .filter(StringUtils::isNotBlank)
+                        .findFirst()
+                        .map(URI::create)
+                ).map(proxy -> {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Using proxy: {}", proxy);
+                            }
+                            return HttpClients.custom()
+                                    .setProxy(new HttpHost(proxy.getHost(), proxy.getPort()))
+                                    .build();
+                        }
+                ).orElseGet(HttpClients::createDefault);
+    }
+
     private final class HttpClientPostExecutor implements Runnable {
 
         final ScheduledExecutorService scheduledExecutorService;
@@ -146,30 +164,54 @@ class MessagePublisherImpl implements MessagePublisher {
             }
         }
 
-        /**
-         * configure a HttpClient used in HttpClientPostExecutor, considering defined proxy settings
-         * set as environment variable in operated system environment.
-         */
-        private CloseableHttpClient getHttpClient() {
-            return Optional.ofNullable(config.getProxyURI())
-                    .or(() -> Stream.of(System.getenv("https_proxy"), System.getenv("HTTPS_PROXY"))
-                            .filter(StringUtils::isNotBlank)
-                            .findFirst()
-                            .map(URI::create)
-                    ).map(proxy -> {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Using proxy: {}", proxy);
-                                }
-                                return HttpClients.custom()
-                                        .setProxy(new HttpHost(proxy.getHost(), proxy.getPort()))
-                                        .build();
-                            }
-                    ).orElseGet(HttpClients::createDefault);
-        }
-
         private void cancel() {
             log.debug("Shutdown scheduled executor service");
             scheduledExecutorService.shutdown();
+        }
+    }
+
+    public void publishSync(final SerializableMessage message) {
+        publishSync(Serializer.asJson(message));
+    }
+
+    public void publishSync(final String jsonBody) {
+        final AtomicInteger attemptCounter = new AtomicInteger(0);
+
+        while (attemptCounter.get() < config.getRetries()) {
+            try (final CloseableHttpClient httpClient = getHttpClient()) {
+                httpPost.setEntity(EntityBuilder.create()
+                        .setText(jsonBody)
+                        .setContentType(ContentType.APPLICATION_JSON)
+                        .build());
+
+                httpClient.execute(httpPost, response -> {
+                    final int responseCode = response.getCode();
+
+                    if (HttpStatus.SC_OK == responseCode || HttpStatus.SC_ACCEPTED == responseCode) {
+                        log.debug("Webhook {} returned with HttpStatus 200.", config.getWebhookURI());
+                        return null;
+                    } else {
+                        throw new IllegalStateException(
+                                "Posting data to %s may have failed. Webhook responded with status code %s"
+                                        .formatted(config.getWebhookURI(), responseCode));
+                    }
+                });
+                return; // Exit the method if successful
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+                if (attemptCounter.incrementAndGet() >= config.getRetries()) {
+                    log.warn("Giving up after {} attempts.", config.getRetries());
+                    throw new RuntimeException("Failed to publish message after retries", e);
+                } else {
+                    log.info("Retrying in {} milliseconds", config.getPauseBetweenRetries());
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(config.getPauseBetweenRetries());
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Thread was interrupted", interruptedException);
+                    }
+                }
+            }
         }
     }
 }
