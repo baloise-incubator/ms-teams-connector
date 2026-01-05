@@ -7,13 +7,10 @@ import com.baloise.open.ms.teams.templates.TeamsMessage;
 import com.baloise.open.ms.teams.templates.TeamsMessageFactory;
 import com.baloise.open.ms.teams.webhook.MessagePublisher;
 import org.apache.commons.lang3.StringUtils;
-import org.awaitility.Awaitility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * Entry point for publishing an Adaptive Card.

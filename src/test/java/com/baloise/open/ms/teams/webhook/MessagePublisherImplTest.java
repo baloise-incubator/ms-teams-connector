@@ -267,7 +267,7 @@ class MessagePublisherImplTest {
 
         private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
 
-        private Config getTestProperties() {
+        Config getTestProperties() {
             return Config.builder()
                     .withWebhookURI("https://test.webhook.com/")
                     .withProxyURI("https://proxy.webhook.com/")

@@ -109,9 +109,8 @@ Other issues (e.g. network failures) surface via log output; retries will occur 
 | RETRIES | PROPERTY_RETRIES | Positive integer. |
 | RETRY_PAUSE_SEC | PROPERTY_RETRY_PAUSE | Seconds. Internally converted to ms. |
 | https_proxy / HTTPS_PROXY | PROPERTY_PROXY_URI | CLI uses environment; property ignored. |
-| (none) | PROPERTY_BLOCKING | CLI always performs a short non-blocking wait (internal Awaitility poll). |
-
-If you need finer control (blocking behavior, programmatic composition) use the library API instead of the CLI.
+| (none) | PROPERTY_BLOCKING | Library only: controls whether publishing blocks the calling thread until completion or max retry duration. CLI always uses a blocking synchronous publish with retries. |
+If you need finer control over blocking vs asynchronous behavior or programmatic composition, use the library API instead of the CLI.
 
 ## Configuration
 
