@@ -170,10 +170,12 @@ class MessagePublisherImpl implements MessagePublisher {
         }
     }
 
+    @Override
     public void publishSync(final SerializableMessage message) {
         publishSync(Serializer.asJson(message));
     }
 
+    @Override
     public void publishSync(final String jsonBody) {
         final AtomicInteger attemptCounter = new AtomicInteger(0);
 
@@ -191,26 +193,29 @@ class MessagePublisherImpl implements MessagePublisher {
                         log.debug("Webhook {} returned with HttpStatus 200.", config.getWebhookURI());
                         return null;
                     } else {
-                        throw new IllegalStateException(
+                        throw new MessagePublishingException(
                                 "Posting data to %s may have failed. Webhook responded with status code %s"
                                         .formatted(config.getWebhookURI(), responseCode));
                     }
                 });
                 return; // Exit the method if successful
-            } catch (Exception e) {
+            } catch (MessagePublishingException e) {
                 log.warn(e.getMessage());
                 if (attemptCounter.incrementAndGet() >= config.getRetries()) {
                     log.warn("Giving up after {} attempts.", config.getRetries());
-                    throw new RuntimeException("Failed to publish message after retries", e);
+                    throw e;
                 } else {
                     log.info("Retrying in {} milliseconds", config.getPauseBetweenRetries());
                     try {
                         TimeUnit.MILLISECONDS.sleep(config.getPauseBetweenRetries());
                     } catch (InterruptedException interruptedException) {
                         Thread.currentThread().interrupt();
-                        throw new RuntimeException("Thread was interrupted", interruptedException);
+                        throw new MessagePublishingException("Thread was interrupted", interruptedException);
                     }
                 }
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+                throw new MessagePublishingException("Unexpected error occurred while publishing message", e);
             }
         }
     }
