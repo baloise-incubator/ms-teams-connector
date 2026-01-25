@@ -180,6 +180,7 @@ class MessagePublisherImpl implements MessagePublisher {
         final AtomicInteger attemptCounter = new AtomicInteger(0);
 
         while (attemptCounter.get() < config.getRetries()) {
+            attemptCounter.incrementAndGet();
             try (final CloseableHttpClient httpClient = getHttpClient()) {
                 httpPost.setEntity(EntityBuilder.create()
                         .setText(jsonBody)
@@ -201,9 +202,9 @@ class MessagePublisherImpl implements MessagePublisher {
                 return; // Exit the method if successful
             } catch (MessagePublishingException e) {
                 log.warn(e.getMessage());
-                if (attemptCounter.incrementAndGet() >= config.getRetries()) {
+                if (attemptCounter.get() >= config.getRetries()) {
                     log.warn("Giving up after {} attempts.", config.getRetries());
-                    throw e;
+                    throw new MessagePublishingException("Failed to publish message after retries", e);
                 } else {
                     log.info("Retrying in {} milliseconds", config.getPauseBetweenRetries());
                     try {
