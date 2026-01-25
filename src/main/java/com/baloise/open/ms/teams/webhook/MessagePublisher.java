@@ -19,6 +19,7 @@ import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.json.SerializableMessage;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 public interface MessagePublisher {
 
@@ -52,4 +53,9 @@ public interface MessagePublisher {
      */
     ScheduledFuture<?> publish(String jsonBody);
 
+    void publishSync(SerializableMessage message);
+
+    void publishSync(String jsonBody);
+
+    CloseableHttpClient getHttpClient();
 }
