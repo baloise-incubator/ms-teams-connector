@@ -1,4 +1,4 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=eclipse-temurin:17-jre
 FROM ${BASE_IMAGE}
 LABEL org.opencontainers.image.source="https://github.com/baloise-incubator/ms-teams-connector"
 
