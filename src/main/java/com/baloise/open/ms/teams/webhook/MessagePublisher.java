@@ -17,9 +17,9 @@ package com.baloise.open.ms.teams.webhook;
 
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.json.SerializableMessage;
+
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 public interface MessagePublisher {
 
@@ -91,23 +91,4 @@ public interface MessagePublisher {
      */
     void publishSync(String jsonBody);
 
-    /**
-     * Returns the {@link CloseableHttpClient} used internally by this {@code MessagePublisher}.
-     * <p>
-     * For typical usage, prefer the {@link #publish(SerializableMessage)}, {@link #publish(String)},
-     * {@link #publishSync(SerializableMessage)} and {@link #publishSync(String)} methods, which handle
-     * HTTP request construction, execution and error handling for you.
-     * </p>
-     * <p>
-     * This method is intended for advanced scenarios where callers need to perform additional HTTP
-     * operations using the same client configuration (e.g. proxy, timeouts, TLS settings) as the
-     * {@code MessagePublisher}. The lifecycle of the returned client is managed by the
-     * {@code MessagePublisher} implementation; callers <strong>must not</strong> close or shut down
-     * the returned {@link CloseableHttpClient}. Closing it may interfere with the internal operation
-     * of the {@code MessagePublisher}.
-     * </p>
-     *
-     * @return the shared {@link CloseableHttpClient} instance used by this {@code MessagePublisher}
-     */
-    CloseableHttpClient getHttpClient();
 }

@@ -24,6 +24,7 @@ hs_err_pid*
 
 # Maven Files #
 /target/
+/dependency-reduced-pom.xml
 
 # IDE Files
 /.idea/
