@@ -53,6 +53,16 @@ class MessagePublisherImplTest {
 
     private Map<String, Object> defaultProperties;
     private final String webhookURI = "https://my.uri.com";
+    private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
+
+    private Config getTestProperties() {
+        return Config.builder()
+            .withWebhookURI("https://test.webhook.com/")
+            .withProxyURI("https://proxy.webhook.com/")
+            .withRetries(1)
+            .withPauseBetweenRetries(1)
+            .build();
+    }
 
     @BeforeEach
     void setUp() {
@@ -264,17 +274,6 @@ class MessagePublisherImplTest {
     @DisplayName("Test webhook MessagePublisher")
     @ExtendWith(MockServerExtension.class)
     class MessagePublisherTest {
-
-        private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
-
-        Config getTestProperties() {
-            return Config.builder()
-                    .withWebhookURI("https://test.webhook.com/")
-                    .withProxyURI("https://proxy.webhook.com/")
-                    .withRetries(1)
-                    .withPauseBetweenRetries(1)
-                    .build();
-        }
 
         @Test
         @DisplayName("HttpEntity is created applying text, contentType and encoding")
@@ -506,34 +505,23 @@ class MessagePublisherImplTest {
             client.reset();
         }
 
-        private String getExtractedUri(MockServerClient client) {
-            return "http://%s:%d".formatted(
-                    client.remoteAddress().getAddress().getHostAddress(),
-                    client.remoteAddress().getPort());
-        }
-
         private String getExtractedUriButWrongPort(MockServerClient client) {
             return "http://%s:%d".formatted(
-                    client.remoteAddress().getAddress().getHostAddress(),
-                    client.remoteAddress().getPort() - 1);
+                client.remoteAddress().getAddress().getHostAddress(),
+                client.remoteAddress().getPort() - 1);
         }
+    }
+
+    private String getExtractedUri(MockServerClient client) {
+        return "http://%s:%d".formatted(
+            client.remoteAddress().getAddress().getHostAddress(),
+            client.remoteAddress().getPort());
     }
 
     @Nested
     @DisplayName("Test publishSync method")
     @ExtendWith(MockServerExtension.class)
     class PublishSyncTest {
-
-        private final String testMessage = "{\"title\":\"UnitTest\",\"content\":\"I should be some JSON content\"}";
-
-        private Config getTestProperties() {
-            return Config.builder()
-                    .withWebhookURI("https://test.webhook.com/")
-                    .withProxyURI("https://proxy.webhook.com/")
-                    .withRetries(1)
-                    .withPauseBetweenRetries(1)
-                    .build();
-        }
 
         @Test
         @DisplayName("publishSync with SerializableMessage sends JSON to webhook")
@@ -746,10 +734,5 @@ class MessagePublisherImplTest {
             client.reset();
         }
 
-        private String getExtractedUri(MockServerClient client) {
-            return "http://%s:%d".formatted(
-                    client.remoteAddress().getAddress().getHostAddress(),
-                    client.remoteAddress().getPort());
-        }
     }
 }

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Baloise Group
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.baloise.open.ms.teams.app;
 
 import com.baloise.open.ms.teams.Config;
@@ -6,11 +21,12 @@ import com.baloise.open.ms.teams.templates.AdaptiveCardFactory;
 import com.baloise.open.ms.teams.templates.TeamsMessage;
 import com.baloise.open.ms.teams.templates.TeamsMessageFactory;
 import com.baloise.open.ms.teams.webhook.MessagePublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Entry point for publishing an Adaptive Card.
@@ -23,9 +39,9 @@ import java.util.*;
  *  0 Success / publish started
  *  2 Validation error (missing parameter)
  */
+@Slf4j
 public class ConnectorApplication {
 
-    private static final Logger log = LoggerFactory.getLogger(ConnectorApplication.class);
     private static final String DEFAULT_SUMMARY = "Automatically generated message";
 
     public static void main(String[] args) {
@@ -47,21 +63,33 @@ public class ConnectorApplication {
         Integer retryPauseSecVal = parseIntEnv(env.get("RETRY_PAUSE_SEC"));
 
         List<String> missing = new ArrayList<>();
-        if (StringUtils.isBlank(webhookUrl)) missing.add("WEBHOOK_URL");
-        if (StringUtils.isBlank(title)) missing.add("MESSAGE_TITLE");
-        if (StringUtils.isBlank(text)) missing.add("MESSAGE_TEXT");
+        if (StringUtils.isBlank(webhookUrl)) {
+            missing.add("WEBHOOK_URL");
+        }
+        if (StringUtils.isBlank(title)) {
+            missing.add("MESSAGE_TITLE");
+        }
+        if (StringUtils.isBlank(text)) {
+            missing.add("MESSAGE_TEXT");
+        }
         if (!missing.isEmpty()) {
             log.error("Missing required environment variable(s): {}", String.join(", ", missing));
             return 2;
         }
 
         AdaptiveCardFactory factory = AdaptiveCardFactory.builder(title, text);
-        if (StringUtils.isNotBlank(themeColor)) factory.withFact("ThemeColor", themeColor);
+        if (StringUtils.isNotBlank(themeColor)) {
+            factory.withFact("ThemeColor", themeColor);
+        }
         AdaptiveCard card = factory.build();
         TeamsMessage message = TeamsMessageFactory.createTeamsMessageWithAdaptiveCard(summary, card);
 
-        int retries = retriesVal != null ? retriesVal : Config.DEFAULT_RETRIES;
-        long pauseMs = retryPauseSecVal != null ? retryPauseSecVal * 1000L : Config.DEFAULT_PAUSE_BETWEEN_RETRIES;
+        int retries = retriesVal != null
+            ? retriesVal
+            : Config.DEFAULT_RETRIES;
+        long pauseMs = retryPauseSecVal != null
+            ? retryPauseSecVal * 1000L
+            : Config.DEFAULT_PAUSE_BETWEEN_RETRIES;
 
         log.info("Starting publish (webhook={}, retries={}, pauseSec={})", webhookUrl, retries, pauseMs/1000);
         Config config = Config.builder()
@@ -75,14 +103,18 @@ public class ConnectorApplication {
     }
 
     private static String trimToNull(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
+        return StringUtils.isBlank(s)
+            ? null
+            : s.trim();
     }
 
     static Integer parseIntEnv(String val) {
-        if (StringUtils.isBlank(val)) return null;
-        try { return Integer.parseInt(val.trim()); } catch (NumberFormatException e) {
+        if (StringUtils.isBlank(val)) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (NumberFormatException e) {
             log.warn("Ignoring invalid integer env value '{}'", val);
             return null;
         }

@@ -11,6 +11,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 
 ## Change Log
 
+- version 0.7.0 adding standalone CLI application capability and docker image
 - version 0.6.0 provides message format wrapper to publish in MS Teams
 - Version 0.5.0
   - support blocking thread executor for batch / cli usage
@@ -31,7 +32,7 @@ Special thanks goes to <a href="https://github.com/luechtdiode" target="_blank">
 <dependency>
   <groupId>com.baloise.open</groupId>
   <artifactId>ms-teams-connector</artifactId>
-  <version>0.6.0</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
@@ -70,23 +71,30 @@ A standalone shaded application is provided so you can publish a card without wr
 
 Use Maven to build the shaded application jar (classifier `app`).
 
+``mvn clean package``
+
+results in 2 artifacts:
+
+- /target/ms-teams-connector-<version>.jar ➡️ use as SDK in other project
+- /target/ms-teams-connector-<version>-app.jar ➡️ standalone CLI version
+
 ### Required environment variables
 
-| Name | Description |
-|------|-------------|
-| WEBHOOK_URL | Teams incoming webhook URL (target channel). |
-| MESSAGE_TITLE | Card title. |
-| MESSAGE_TEXT | Markdown body text of the card. |
+| Name          | Description                                  |
+|---------------|----------------------------------------------|
+| WEBHOOK_URL   | Teams incoming webhook URL (target channel). |
+| MESSAGE_TITLE | Card title.                                  |
+| MESSAGE_TEXT  | Markdown body text of the card.              |
 
 ### Optional environment variables
 
-| Name | Description | Default |
-|------|-------------|---------|
-| MESSAGE_SUMMARY | Short textual summary (shown in notifications). | none |
-| MESSAGE_THEME_COLOR | Hex or named color (Teams may map it). | none |
-| RETRIES | Number of publish retries (>0). Invalid values are ignored. | 3 |
-| RETRY_PAUSE_SEC | Pause between retries in seconds (>0). Invalid values are ignored. | 60 |
-| https_proxy / HTTPS_PROXY | Proxy URL if outbound traffic requires a proxy. | none |
+| Name                      | Description                                                        | Default |
+|---------------------------|--------------------------------------------------------------------|---------|
+| MESSAGE_SUMMARY           | Short textual summary (shown in notifications).                    | none    |
+| MESSAGE_THEME_COLOR       | Hex or named color (Teams may map it).                             | none    |
+| RETRIES                   | Number of publish retries (>0). Invalid values are ignored.        | 3       |
+| RETRY_PAUSE_SEC           | Pause between retries in seconds (>0). Invalid values are ignored. | 60      |
+| https_proxy / HTTPS_PROXY | Proxy URL if outbound traffic requires a proxy.                    | none    |
 
 Notes:
 - Invalid integer values for RETRIES / RETRY_PAUSE_SEC are ignored with a warning; defaults are used.
@@ -94,22 +102,22 @@ Notes:
 
 ### Exit codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success: publish job was initialized. |
-| 2 | Validation error: one or more required environment variables missing. |
+| Code | Meaning                                                               |
+|------|-----------------------------------------------------------------------|
+| 0    | Success:  message was successfully published.                         |
+| 2    | Validation error: one or more required environment variables missing. |
 
 Other issues (e.g. network failures) surface via log output; retries will occur automatically.
 
 ### Mapping: Environment vs Config properties
 
-| Environment | Config Property | Notes |
-|-------------|-----------------|-------|
-| WEBHOOK_URL | PROPERTY_WEBHOOK_URI | Mandatory in both. |
-| RETRIES | PROPERTY_RETRIES | Positive integer. |
-| RETRY_PAUSE_SEC | PROPERTY_RETRY_PAUSE | Seconds. Internally converted to ms. |
-| https_proxy / HTTPS_PROXY | PROPERTY_PROXY_URI | CLI uses environment; property ignored. |
-| (none) | PROPERTY_BLOCKING | Library only: controls whether publishing blocks the calling thread until completion or max retry duration. CLI always uses a blocking synchronous publish with retries. |
+| Environment               | Config Property      | Notes                                                                                                                                                                    |
+|---------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| WEBHOOK_URL               | PROPERTY_WEBHOOK_URI | Mandatory in both.                                                                                                                                                       |
+| RETRIES                   | PROPERTY_RETRIES     | Positive integer.                                                                                                                                                        |
+| RETRY_PAUSE_SEC           | PROPERTY_RETRY_PAUSE | Seconds. Internally converted to ms.                                                                                                                                     |
+| https_proxy / HTTPS_PROXY | PROPERTY_PROXY_URI   | CLI uses environment; property ignored.                                                                                                                                  |
+| (none)                    | PROPERTY_BLOCKING    | Library only: controls whether publishing blocks the calling thread until completion or max retry duration. CLI always uses a blocking synchronous publish with retries. |
 If you need finer control over blocking vs asynchronous behavior or programmatic composition, use the library API instead of the CLI.
 
 ## Configuration

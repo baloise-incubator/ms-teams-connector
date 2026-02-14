@@ -18,14 +18,6 @@ package com.baloise.open.ms.teams.webhook;
 import com.baloise.open.ms.teams.Config;
 import com.baloise.open.ms.teams.json.SerializableMessage;
 import com.baloise.open.ms.teams.json.Serializer;
-import java.net.URI;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -37,6 +29,15 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+
+import java.net.URI;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @Slf4j
 class MessagePublisherImpl implements MessagePublisher {
@@ -101,8 +102,7 @@ class MessagePublisherImpl implements MessagePublisher {
         return config;
     }
 
-    @Override
-    public CloseableHttpClient getHttpClient() {
+    private CloseableHttpClient getHttpClient() {
         return Optional.ofNullable(config.getProxyURI())
                 .or(() -> Stream.of(System.getenv("https_proxy"), System.getenv("HTTPS_PROXY"))
                         .filter(StringUtils::isNotBlank)
