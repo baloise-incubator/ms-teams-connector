@@ -53,8 +53,42 @@ public interface MessagePublisher {
      */
     ScheduledFuture<?> publish(String jsonBody);
 
+    /**
+     * Synchronously transmits the provided {@link SerializableMessage} to the configured webhook.
+     * <p>
+     * Unlike {@link #publish(SerializableMessage)}, this method blocks the calling thread until the
+     * HTTP request has completed and any configured retry attempts (if supported by the implementation)
+     * have either succeeded or been exhausted.
+     * </p>
+     * <p>
+     * Implementations are expected to throw a runtime exception if the message cannot be delivered
+     * successfully after all attempts (for example due to I/O errors, timeouts, or non-successful
+     * HTTP status codes). No checked exceptions are declared on this interface; callers should consult
+     * the concrete implementation for the exact exception types that may be thrown.
+     * </p>
+     *
+     * @param message the message to publish synchronously, must not be {@code null}
+     * @throws RuntimeException if delivery ultimately fails after all configured attempts
+     */
     void publishSync(SerializableMessage message);
 
+    /**
+     * Synchronously transmits the provided JSON body to the configured webhook.
+     * <p>
+     * Unlike {@link #publish(String)}, this method blocks the calling thread until the
+     * HTTP request has completed and any configured retry attempts (if supported by the implementation)
+     * have either succeeded or been exhausted.
+     * </p>
+     * <p>
+     * Implementations are expected to throw a runtime exception if the JSON payload cannot be delivered
+     * successfully after all attempts (for example due to I/O errors, timeouts, or non-successful
+     * HTTP status codes). No checked exceptions are declared on this interface; callers should consult
+     * the concrete implementation for the exact exception types that may be thrown.
+     * </p>
+     *
+     * @param jsonBody the JSON payload to publish synchronously, must not be {@code null}
+     * @throws RuntimeException if delivery ultimately fails after all configured attempts
+     */
     void publishSync(String jsonBody);
 
     CloseableHttpClient getHttpClient();
