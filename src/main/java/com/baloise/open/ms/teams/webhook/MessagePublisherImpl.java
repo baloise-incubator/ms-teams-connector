@@ -187,37 +187,39 @@ class MessagePublisherImpl implements MessagePublisher {
                         .setContentType(ContentType.APPLICATION_JSON)
                         .build());
 
-                httpClient.execute(httpPost, response -> {
-                    final int responseCode = response.getCode();
-
-                    if (HttpStatus.SC_OK == responseCode || HttpStatus.SC_ACCEPTED == responseCode) {
-                        log.debug("Webhook {} returned with HttpStatus 200.", config.getWebhookURI());
-                        return null;
-                    } else {
-                        throw new MessagePublishingException(
-                                "Posting data to %s may have failed. Webhook responded with status code %s"
-                                        .formatted(config.getWebhookURI(), responseCode));
-                    }
-                });
+                httpClient.execute(httpPost, response -> handleResponse(response.getCode()));
                 return; // Exit the method if successful
             } catch (MessagePublishingException e) {
                 log.warn(e.getMessage());
                 if (attemptCounter.get() >= config.getRetries()) {
                     log.warn("Giving up after {} attempts.", config.getRetries());
                     throw new MessagePublishingException("Failed to publish message after retries", e);
-                } else {
-                    log.info("Retrying in {} milliseconds", config.getPauseBetweenRetries());
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(config.getPauseBetweenRetries());
-                    } catch (InterruptedException interruptedException) {
-                        Thread.currentThread().interrupt();
-                        throw new MessagePublishingException("Thread was interrupted", interruptedException);
-                    }
                 }
+                sleepBeforeRetry();
             } catch (Exception e) {
                 log.warn(e.getMessage());
                 throw new MessagePublishingException("Unexpected error occurred while publishing message", e);
             }
+        }
+    }
+
+    private Void handleResponse(final int responseCode) {
+        if (HttpStatus.SC_OK == responseCode || HttpStatus.SC_ACCEPTED == responseCode) {
+            log.debug("Webhook {} returned with HttpStatus 200.", config.getWebhookURI());
+            return null;
+        }
+        throw new MessagePublishingException(
+                "Posting data to %s may have failed. Webhook responded with status code %s"
+                        .formatted(config.getWebhookURI(), responseCode));
+    }
+
+    private void sleepBeforeRetry() {
+        log.info("Retrying in {} milliseconds", config.getPauseBetweenRetries());
+        try {
+            TimeUnit.MILLISECONDS.sleep(config.getPauseBetweenRetries());
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            throw new MessagePublishingException("Thread was interrupted", interruptedException);
         }
     }
 }
