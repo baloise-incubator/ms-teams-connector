@@ -187,7 +187,16 @@ class MessagePublisherImpl implements MessagePublisher {
                         .setContentType(ContentType.APPLICATION_JSON)
                         .build());
 
-                httpClient.execute(httpPost, response -> handleResponse(response.getCode()));
+                httpClient.execute(httpPost, response -> {
+                    try {
+                        return handleResponse(response.getCode());
+                    } finally {
+                        final HttpEntity entity = response.getEntity();
+                        if (entity != null) {
+                            EntityUtils.consume(entity);
+                        }
+                    }
+                });
                 return; // Exit the method if successful
             } catch (MessagePublishingException e) {
                 log.warn(e.getMessage());
