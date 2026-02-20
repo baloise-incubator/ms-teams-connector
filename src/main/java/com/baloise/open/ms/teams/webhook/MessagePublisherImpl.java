@@ -205,7 +205,7 @@ class MessagePublisherImpl implements MessagePublisher {
 
     private Void handleResponse(final int responseCode) {
         if (HttpStatus.SC_OK == responseCode || HttpStatus.SC_ACCEPTED == responseCode) {
-            log.debug("Webhook {} returned with HttpStatus 200.", config.getWebhookURI());
+            log.debug("Webhook {} returned with HttpStatus {}.", config.getWebhookURI(), responseCode);
             return null;
         }
         throw new MessagePublishingException(
